@@ -77,6 +77,21 @@ On every release, an automated GitHub Actions pipeline compiles and packages the
 2. Download the `SmartTextKey-Installer-DMG` artifact.
 3. Open `SmartTextKey.dmg`, drag the **Smart Text Key** icon into your **Applications** folder, and launch!
 
+> [!IMPORTANT]
+> **macOS Security & Gatekeeper Note:**  
+> Since releases or local builds may not be signed/notarized with an Apple Developer Account, macOS might block the app on first launch, showing a warning that the app cannot be opened or verified.  
+>   
+> **To allow running the app:**  
+> 1. Open **System Settings** (Системные настройки) on your Mac.  
+> 2. Navigate to **Privacy & Security** (Конфиденциальность и безопасность).  
+> 3. Scroll down to the *Security* section. You will see a message stating that *"SmartTextKey" was blocked*.  
+> 4. Click **Open Anyway** (Разрешить в любом случае) and enter your system password to confirm.  
+>   
+> Alternatively, you can clear the quarantine attribute using Terminal:  
+> ```bash
+> xattr -dr com.apple.quarantine /Applications/SmartTextKey.app
+> ```
+
 ### Building & Compilation Local
 
 If you want to package a custom DMG locally, we provide a unified packaging script:
