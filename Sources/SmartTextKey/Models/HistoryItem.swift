@@ -6,12 +6,14 @@ public struct HistoryItem: Identifiable, Sendable, Equatable {
     public let promptTitle: String
     public let inputText: String
     public let outputText: String
+    public let modelName: String
     
-    public init(id: Int64, timestamp: Date, promptTitle: String, inputText: String, outputText: String) {
+    public init(id: Int64, timestamp: Date, promptTitle: String, inputText: String, outputText: String, modelName: String) {
         self.id = id
         self.timestamp = timestamp
         self.promptTitle = promptTitle
         self.inputText = inputText
         self.outputText = outputText
+        self.modelName = modelName
     }
 }

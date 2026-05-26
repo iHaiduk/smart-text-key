@@ -273,6 +273,7 @@ struct ApiSettingsView: View {
                 providerId: settings.apiConfigs[index].providerId,
                 themeAccentColor: settings.themeAccentColor
             )
+            .id("\(settings.apiConfigs[index].id)-\(settings.apiConfigs[index].providerId)")
         }
     }
 

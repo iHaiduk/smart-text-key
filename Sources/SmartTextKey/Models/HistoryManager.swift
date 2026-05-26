@@ -76,14 +76,17 @@ public final class HistoryManager {
                 sqlite3_free(errorPointer)
             }
         }
+        
+        let alterTableSQL = "ALTER TABLE transformations ADD COLUMN model_name TEXT;"
+        sqlite3_exec(db, alterTableSQL, nil, nil, nil) // Ignore error if it already exists
     }
     
-    public func logTransformation(promptTitle: String, inputText: String, outputText: String) {
+    public func logTransformation(promptTitle: String, inputText: String, outputText: String, modelName: String) {
         guard let db = db else { return }
         
         let insertSQL = """
-        INSERT INTO transformations (timestamp, prompt_title, input_text, output_text)
-        VALUES (?, ?, ?, ?);
+        INSERT INTO transformations (timestamp, prompt_title, input_text, output_text, model_name)
+        VALUES (?, ?, ?, ?, ?);
         """
         
         var statement: OpaquePointer?
@@ -94,6 +97,7 @@ public final class HistoryManager {
             sqlite3_bind_text(statement, 2, (promptTitle as NSString).utf8String, -1, nil)
             sqlite3_bind_text(statement, 3, (inputText as NSString).utf8String, -1, nil)
             sqlite3_bind_text(statement, 4, (outputText as NSString).utf8String, -1, nil)
+            sqlite3_bind_text(statement, 5, (modelName as NSString).utf8String, -1, nil)
             
             if sqlite3_step(statement) == SQLITE_DONE {
                 print("Smart Text Key [HistoryManager]: Successfully logged transformation.")
@@ -113,7 +117,7 @@ public final class HistoryManager {
         guard let db = db else { return [] }
         
         let selectSQL = """
-        SELECT id, timestamp, prompt_title, input_text, output_text
+        SELECT id, timestamp, prompt_title, input_text, output_text, model_name
         FROM transformations
         ORDER BY timestamp DESC;
         """
@@ -147,13 +151,21 @@ public final class HistoryManager {
                     outputText = ""
                 }
                 
+                let modelName: String
+                if let cModelName = sqlite3_column_text(statement, 5) {
+                    modelName = String(cString: cModelName)
+                } else {
+                    modelName = "Unknown"
+                }
+                
                 let date = Date(timeIntervalSince1970: timestampVal)
                 items.append(HistoryItem(
                     id: id,
                     timestamp: date,
                     promptTitle: promptTitle,
                     inputText: inputText,
-                    outputText: outputText
+                    outputText: outputText,
+                    modelName: modelName
                 ))
             }
         } else {

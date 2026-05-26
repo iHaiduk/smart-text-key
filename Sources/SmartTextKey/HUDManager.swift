@@ -6,6 +6,7 @@ struct ProcessingHUDView: View {
     @Bindable private var state = StreamingState.shared
     @Bindable private var settings = AppSettings.shared
     let actionTitle: String
+    let modelName: String
     
     var body: some View {
         HStack(spacing: 10) {
@@ -14,35 +15,51 @@ struct ProcessingHUDView: View {
                 .controlSize(.small)
                 .scaleEffect(0.85)
             
-            Text(actionTitle)
-                .font(.system(size: 12, weight: .semibold, design: .rounded))
-                .foregroundStyle(.primary)
-                .lineLimit(1)
-            
-            Text("•")
-                .font(.system(size: 12))
-                .foregroundStyle(.secondary.opacity(0.4))
-            
-            if state.isStreaming && state.tokenCount > 0 {
-                Text("Writing... \(state.tokenCount) tokens")
-                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(settings.themeAccentColor)
+            if state.isPreparing {
+                if !state.shortcutName.isEmpty {
+                    Text(state.shortcutName)
+                        .font(.system(size: 11, weight: .bold, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 4)
+                        .background(Color.secondary.opacity(0.1))
+                        .cornerRadius(4)
+                }
+                
+                Text(actionTitle)
+                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.primary)
                     .lineLimit(1)
             } else {
-                Text("Processing...")
-                    .font(.system(size: 11, weight: .medium))
+                Text(actionTitle)
+                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                
+                Text("•")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary.opacity(0.4))
+                
+                if state.isStreaming && state.tokenCount > 0 {
+                    Text("Writing... \(state.tokenCount) tokens")
+                        .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                        .foregroundStyle(settings.themeAccentColor)
+                        .lineLimit(1)
+                } else {
+                    Text("Processing...")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+                
+                Text("•")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary.opacity(0.4))
+                
+                Text(modelName)
+                    .font(.system(size: 10, design: .monospaced))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
-            
-            Text("•")
-                .font(.system(size: 12))
-                .foregroundStyle(.secondary.opacity(0.4))
-            
-            Text(settings.activeConfig.modelName)
-                .font(.system(size: 10, design: .monospaced))
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
         }
         .padding(.horizontal, 14)
         .frame(width: 400, height: 36)
@@ -73,18 +90,18 @@ public final class HUDManager {
     }
     
     /// Spawns a minimal horizontal capsule HUD at the bottom-center of the active screen.
-    public func showHUD(actionTitle: String) {
+    public func showHUD(actionTitle: String, modelName: String) {
         // Dismiss any existing HUD immediately without animations
         dismissHUD(animated: false)
         
-        let hudView = ProcessingHUDView(actionTitle: actionTitle)
+        let hudView = ProcessingHUDView(actionTitle: actionTitle, modelName: modelName)
         let hostingController = NSHostingController(rootView: hudView)
         
         let hudWidth: CGFloat = 400
         let hudHeight: CGFloat = 36
         
         // 1. Calculate X & Y to position HUD at the bottom-center of the visible screen area (above dock)
-        guard let screen = NSScreen.main else { return }
+        guard let screen = NSScreen.main ?? NSScreen.screens.first else { return }
         let screenFrame = screen.visibleFrame
         
         let x = screenFrame.origin.x + (screenFrame.width - hudWidth) / 2
@@ -175,7 +192,7 @@ public final class HUDManager {
         let popoverWidth: CGFloat = 480
         let popoverHeight: CGFloat = 380
         
-        guard let screen = NSScreen.main else { return }
+        guard let screen = NSScreen.main ?? NSScreen.screens.first else { return }
         let screenFrame = screen.visibleFrame
         
         let x = screenFrame.origin.x + (screenFrame.width - popoverWidth) / 2

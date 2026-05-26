@@ -43,9 +43,25 @@ public final class ShortcutManager {
     func triggerAction(_ action: PromptAction) async {
         print("Smart Text Key: Global hotkey triggered for action: [\(action.title)]")
         
-        // Wait slightly to ensure user has released hotkey modifier keys (e.g. Cmd, Shift, Option)
-        // so that they don't collide with simulated keystrokes.
-        try? await Task.sleep(nanoseconds: 150_000_000)
+        // Wait up to 1 second to ensure user has released hotkey modifier keys
+        // (e.g. Cmd, Shift, Option) so they don't collide with simulated keystrokes.
+        let startTime = Date()
+        while Date().timeIntervalSince(startTime) < 1.0 {
+            let flags = NSEvent.modifierFlags
+            let mask: NSEvent.ModifierFlags = [.command, .option, .control, .shift]
+            if flags.intersection(mask).isEmpty {
+                break
+            }
+            try? await Task.sleep(for: .milliseconds(20))
+        }
+        
+        // Add a tiny extra delay to let the OS clear the state
+        try? await Task.sleep(for: .milliseconds(50))
+        
+        if Task.isCancelled {
+            print("Smart Text Key: Task cancelled during initial delay.")
+            return
+        }
         
         // Clean up Escape monitors automatically when triggerAction completes or is cancelled
         defer {
@@ -101,7 +117,29 @@ public final class ShortcutManager {
         
         // Reset streaming state on main actor
         StreamingState.shared.reset()
+        
+        let apiSettings = AppSettings.shared
+        let modelName: String
+        if let boundId = action.apiConfigId,
+           let boundConfig = apiSettings.apiConfigs.first(where: { $0.id == boundId }) {
+            modelName = boundConfig.modelName
+        } else {
+            modelName = apiSettings.activeConfig.modelName
+        }
+        
+        let shortcutName = KeyboardShortcuts.Name(action.shortcutId)
+        if let shortcut = KeyboardShortcuts.getShortcut(for: shortcutName) {
+            StreamingState.shared.shortcutName = shortcut.description
+        } else {
+            StreamingState.shared.shortcutName = ""
+        }
+        StreamingState.shared.isPreparing = true
         StreamingState.shared.isStreaming = true
+        
+        Task {
+            try? await Task.sleep(for: .seconds(1.2))
+            await MainActor.run { StreamingState.shared.isPreparing = false }
+        }
         
         var shouldCleanHUDAtEnd = true
         
@@ -153,6 +191,11 @@ public final class ShortcutManager {
                     throw CancellationError()
                 }
                 
+                let cleanResponse = response.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !cleanResponse.isEmpty else {
+                    throw NSError(domain: "SmartTextKey", code: -1, userInfo: [NSLocalizedDescriptionKey: "AI returned an empty response. Text was not replaced."])
+                }
+                
                 print("Smart Text Key: AI stream completed successfully.")
                 StreamingState.shared.isStreaming = false
                 StreamingState.shared.text = response
@@ -161,7 +204,8 @@ public final class ShortcutManager {
                 HistoryManager.shared.logTransformation(
                     promptTitle: action.title,
                     inputText: capturedText,
-                    outputText: response
+                    outputText: response,
+                    modelName: modelName
                 )
                 
                 // Play audio success sound cue
@@ -193,7 +237,7 @@ public final class ShortcutManager {
             }
         } else {
             // Non-popover mode: show horizontal progress capsule HUD
-            HUDManager.shared.showHUD(actionTitle: action.title)
+            HUDManager.shared.showHUD(actionTitle: action.title, modelName: modelName)
             
             do {
                 let response = try await AIService.shared.process(action: action, capturedText: capturedText) { chunk in
@@ -208,6 +252,11 @@ public final class ShortcutManager {
                     throw CancellationError()
                 }
                 
+                let cleanResponse = response.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !cleanResponse.isEmpty else {
+                    throw NSError(domain: "SmartTextKey", code: -1, userInfo: [NSLocalizedDescriptionKey: "AI returned an empty response. Text was not replaced."])
+                }
+                
                 print("Smart Text Key: AI request completed successfully. Simulating direct paste...")
                 StreamingState.shared.isStreaming = false
                 
@@ -218,7 +267,8 @@ public final class ShortcutManager {
                 HistoryManager.shared.logTransformation(
                     promptTitle: action.title,
                     inputText: capturedText,
-                    outputText: response
+                    outputText: response,
+                    modelName: modelName
                 )
                 
                 // Play audio success sound cue

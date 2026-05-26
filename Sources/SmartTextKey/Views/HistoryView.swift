@@ -191,9 +191,18 @@ struct HistoryCard: View {
                         .font(.system(size: 13, weight: .bold))
                         .foregroundStyle(.primary)
                     
-                    Text(dateFormatter.string(from: item.timestamp))
-                        .font(.system(size: 10))
-                        .foregroundStyle(.secondary)
+                    HStack(spacing: 6) {
+                        Text(dateFormatter.string(from: item.timestamp))
+                            .font(.system(size: 10))
+                            .foregroundStyle(.secondary)
+                        
+                        Text(item.modelName)
+                            .font(.system(size: 9, design: .monospaced))
+                            .padding(.horizontal, 4)
+                            .background(Color.secondary.opacity(0.1))
+                            .cornerRadius(3)
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 
                 Spacer()

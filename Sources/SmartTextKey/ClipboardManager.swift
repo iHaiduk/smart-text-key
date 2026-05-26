@@ -18,8 +18,8 @@ public final class ClipboardManager {
     private(set) var hadSelectionInitially = false
 
     private enum Timing {
-        static let modifierRelease: Duration = .milliseconds(50)
-        static let copyTimeout: Duration = .milliseconds(300)
+        static let modifierRelease: Duration = .milliseconds(150)
+        static let copyTimeout: Duration = .milliseconds(400)
         static let pasteboardPoll: Duration = .milliseconds(20)
         static let sourceAppActivation: Duration = .milliseconds(200)
         static let pasteCompletion: Duration = .milliseconds(150)
@@ -27,7 +27,6 @@ public final class ClipboardManager {
 
     private enum SelectionStrategy {
         case currentSelection
-        case caretToStart
         case selectAll
     }
 
@@ -43,9 +42,7 @@ public final class ClipboardManager {
     /// Returns a tuple containing the captured text and the backup dictionary of the clipboard before capture.
     /// Returns nil if permissions are missing or no text was selected (aborted).
     public func captureSelectedText() async -> (text: String, backup: [NSPasteboard.PasteboardType: Data])? {
-        // 0. Remember which app the user is working in so we can re-activate it before paste
         sourceApplication = NSWorkspace.shared.frontmostApplication
-        usedSelectAll = false
         hadSelectionInitially = false
 
         // 1. Ensure Accessibility access
@@ -60,25 +57,19 @@ public final class ClipboardManager {
         let pasteboard = NSPasteboard.general
         var capturedText = await captureText(from: pasteboard, using: .currentSelection)
 
+        if Task.isCancelled { return nil }
+
         if hasMeaningfulText(capturedText) {
             hadSelectionInitially = true
         }
 
-        // 4. Smart Caret-to-Start Selection (Strategy 1):
-        // If nothing is selected, try Cmd+Shift+Up to select from the very beginning
-        // of the focused input up to the current cursor (caret) position.
+        // 4. Fallback Selection (Strategy 1):
+        // If nothing is selected, fall back to Cmd+A to select all text in the active document.
         if !hasMeaningfulText(capturedText) {
-            print("Smart Text Key: Selection empty. Strategy 1: Cmd+Shift+Up (select to start of field)...")
-            capturedText = await captureText(from: pasteboard, using: .caretToStart)
-        }
-
-        // 5. Fallback Selection (Strategy 2):
-        // If Cmd+Shift+Up didn't work (custom editors like SnippetsLab),
-        // fall back to Cmd+A which is universally supported.
-        if !hasMeaningfulText(capturedText) {
-            print("Smart Text Key: Strategy 1 failed. Strategy 2: Cmd+A (select all)...")
+            print("Smart Text Key: Selection empty. Falling back to Cmd+A (select all)...")
             usedSelectAll = true
             capturedText = await captureText(from: pasteboard, using: .selectAll)
+            if Task.isCancelled { return nil }
         }
 
         guard let finalCaptured = capturedText, hasMeaningfulText(capturedText) else {
@@ -91,30 +82,7 @@ public final class ClipboardManager {
         return (text: finalCaptured, backup: backup)
     }
 
-    /// Simulates a macOS keyboard shortcut to select all text from the very beginning
-    /// of the focused input field up to the current cursor (caret) position.
-    ///
-    /// Uses Cmd+Shift+Up Arrow which is the universal macOS text system binding
-    /// for "move to beginning of document and modify selection". This works in both
-    /// single-line text fields and multi-line text areas across standard Cocoa,
-    /// Electron, and browser-based text inputs.
-    ///
-    /// The operation is intentionally "soft" — it only fires when no text is currently
-    /// selected, so it does not interfere with keyboard shortcuts or override an
-    /// existing user selection.
-    private func growSelectionToCaret() async {
-        // Select from current caret position to the very start of the text field:
-        // Cmd + Shift + Up Arrow (moveToBeginningOfDocumentAndModifySelection:)
-        simulateKeystroke(
-            keyCode: CGKeyCode(kVK_UpArrow),
-            flags: [.maskCommand, .maskShift]
-        )
-
-        try? await Task.sleep(for: Timing.modifierRelease)
-    }
-
-    /// Universal fallback: simulates Cmd+A to select all text in the focused field.
-    /// Works in virtually every macOS application including custom code editors.
+    /// Simulates Cmd+A to select all text in the active application.
     private func selectAll() async {
         simulateKeystroke(
             keyCode: CGKeyCode(kVK_ANSI_A),
@@ -137,15 +105,12 @@ public final class ClipboardManager {
             try? await Task.sleep(for: Timing.sourceAppActivation)
         }
 
-        // 2. Re-select the original text so that Cmd+V *replaces* it instead of inserting.
-        //    If the user had an initial selection, we don't simulate any selection key strokes
-        //    since the target app preserves their active selection upon reactivation.
-        if hadSelectionInitially {
-            // Do nothing, the active selection is already preserved in the reactivated app.
-        } else if usedSelectAll {
+        // 2. Re-select the original text if needed.
+        //    If the user had an initial selection, we do nothing (app preserves selection).
+        //    If they did NOT have a selection, it means we selected everything (usedSelectAll was true).
+        //    We trigger selectAll() again to ensure Cmd+V replaces everything.
+        if !hadSelectionInitially && usedSelectAll {
             await selectAll()
-        } else {
-            await growSelectionToCaret()
         }
 
         // 3. Place the AI result on the clipboard
@@ -212,8 +177,6 @@ public final class ClipboardManager {
         switch strategy {
         case .currentSelection:
             break
-        case .caretToStart:
-            await growSelectionToCaret()
         case .selectAll:
             await selectAll()
         }

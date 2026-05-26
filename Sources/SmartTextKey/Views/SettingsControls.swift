@@ -76,6 +76,7 @@ struct ModelSearchPicker: View {
 
     @State private var isShowingSuggestions = false
     @State private var searchText = ""
+    @State private var isTyping = false
     @FocusState private var isFocused: Bool
 
     @State private var dynamicModels: [String] = []
@@ -99,11 +100,36 @@ struct ModelSearchPicker: View {
     }
 
     var filteredSuggestions: [String] {
-        if searchText.isEmpty {
-            return modelsToUse
+        let baseList = modelsToUse
+        
+        if !isTyping {
+            let selected = modelName.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !selected.isEmpty, let index = baseList.firstIndex(of: selected) {
+                var reordered = baseList
+                reordered.remove(at: index)
+                return [selected] + reordered
+            }
+            return baseList
         } else {
-            return modelsToUse.filter { $0.localizedCaseInsensitiveContains(searchText) }
+            if searchText.isEmpty {
+                return baseList
+            } else {
+                return baseList.filter { $0.localizedCaseInsensitiveContains(searchText) }
+            }
         }
+    }
+
+    private var scrollViewHeight: CGFloat {
+        if isLoadingModels && dynamicModels.isEmpty {
+            return 60
+        }
+        let rowHeight: CGFloat = 28
+        let count = filteredSuggestions.count
+        if count == 0 {
+            return 40
+        }
+        let visibleCount = min(count, 5)
+        return CGFloat(visibleCount) * rowHeight + 8
     }
 
     private func fetchModels() {
@@ -136,17 +162,24 @@ struct ModelSearchPicker: View {
                     .padding(.vertical, 8)
                     .focused($isFocused)
                     .onChange(of: modelName) { _, newValue in
-                        searchText = newValue
+                        if isFocused {
+                            isTyping = true
+                            searchText = newValue
+                        }
                     }
                     .onChange(of: isFocused) { _, newValue in
                         if newValue {
+                            isTyping = false
                             searchText = modelName
                             isShowingSuggestions = true
                             fetchModels()
+                        } else {
+                            isShowingSuggestions = false
                         }
                     }
 
                 Button {
+                    isFocused = true
                     isShowingSuggestions.toggle()
                     if isShowingSuggestions {
                         fetchModels()
@@ -165,6 +198,15 @@ struct ModelSearchPicker: View {
                 RoundedRectangle(cornerRadius: 6)
                     .stroke(isFocused ? themeAccentColor : Color.secondary.opacity(0.2), lineWidth: 1)
             )
+            .contentShape(Rectangle())
+            .onTapGesture {
+                isFocused = true
+            }
+            .onChange(of: isShowingSuggestions) { _, newValue in
+                if !newValue {
+                    isFocused = false
+                }
+            }
             .popover(isPresented: $isShowingSuggestions, arrowEdge: .bottom) {
                 VStack(alignment: .leading, spacing: 0) {
                     HStack {
@@ -227,7 +269,7 @@ struct ModelSearchPicker: View {
                         }
                         .padding(4)
                     }
-                    .frame(maxHeight: 280)
+                    .frame(height: scrollViewHeight)
                 }
                 .frame(width: 320)
             }

@@ -21,7 +21,7 @@ Designed for developers, writers, and power users who want friction-free AI inte
 - **🧩 Provider-Aware AI Routing**: Choose OpenAI-compatible APIs, native Ollama, Anthropic, or DeepSeek per profile, each with provider-specific request and streaming support.
 - **🛠️ Automated API Failovers**: Attach secondary backup profiles to any API profile. If your primary Ollama or OpenAI server goes offline, the request automatically redirects to your fallback route.
 - **🔊 Premium Sound Feedback**: Native sound cues utilizing macOS AppKit `NSSound` alerts. Plays `"Purr"` on capture, `"Glass"` on completion, and `"Basso"` on failovers or errors.
-- **🔍 Smart Selection Growth**: If you press a hotkey with an empty selection, a built-in macro automatically grows the text cursor to capture the active paragraph before running.
+- **🔍 Smart Fallback Selection**: If you press a hotkey with an active text selection, only that selected text is processed and replaced. If no text is selected, the tool automatically falls back to selecting and replacing the entire active document content (using `Cmd+A`).
 - **🧬 Auto-Discovery Combobox Picker**: A custom editable dropdown list that queries standard `/v1/models` and native Ollama `/api/tags` endpoints in the background, updating suggestions as you type.
 
 ---
@@ -32,7 +32,7 @@ Designed for developers, writers, and power users who want friction-free AI inte
 graph TD
     A[Global Hotkey Triggered] -->|ShortcutManager| B[ClipboardManager]
     B -->|Simulate Cmd+C| C{Text Selected?}
-    C -->|No: Paragraph macro| D[Grow Selection to Paragraph]
+    C -->|No: Select-all fallback| D[Simulate Cmd+A to select all]
     D -->|Simulate Cmd+C| C
     C -->|Yes| E[Play Sound & Set Status Loading]
     E -->|AIService| F[Substitute Template Tags]

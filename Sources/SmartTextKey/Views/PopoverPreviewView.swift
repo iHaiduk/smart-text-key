@@ -10,6 +10,8 @@ public final class StreamingState {
     public var text: String = ""
     public var tokenCount: Int = 0
     public var isStreaming: Bool = false
+    public var isPreparing: Bool = false
+    public var shortcutName: String = ""
     
     private init() {}
     
@@ -17,6 +19,8 @@ public final class StreamingState {
         text = ""
         tokenCount = 0
         isStreaming = false
+        isPreparing = false
+        shortcutName = ""
     }
 }
 
