@@ -26,33 +26,6 @@ Designed for developers, writers, and power users who want friction-free AI inte
 
 ---
 
-## 🛠️ Architecture
-
-```mermaid
-graph TD
-    A[Global Hotkey Triggered] -->|ShortcutManager| B[ClipboardManager]
-    B -->|Simulate Cmd+C| C{Text Selected?}
-    C -->|No: Select-all fallback| D[Simulate Cmd+A to select all]
-    D -->|Simulate Cmd+C| C
-    C -->|Yes| E[Play Sound & Set Status Loading]
-    E -->|AIService| F[Substitute Template Tags]
-    F -->|Check Action Binding| G{Has dedicated API Config?}
-    G -->|Yes| H[Load Bound Profile]
-    G -->|No| I[Inherit Global Active Profile]
-    H --> J{Popover Mode Active?}
-    I --> J
-    J -->|Yes| K[Show Interactive Popover & Stream SSE Chunks]
-    J -->|No| L[Show Bottom Capsule HUD & Stream Token Counts]
-    K -->|User Approves / Return| M[Simulate Paste & Restore Original Clipboard]
-    L -->|Auto Paste| M
-    M -->|Success| N[Play Success Sound & Log SQLite History]
-    
-    style D fill:#fcf,stroke:#333,stroke-width:1px
-    style N fill:#bfb,stroke:#333,stroke-width:1px
-```
-
----
-
 ## 💻 Tech Stack & Design
 
 1. **Platform Target**: Native macOS 14.0+ (compiled natively for Apple Silicon and Intel targets).
