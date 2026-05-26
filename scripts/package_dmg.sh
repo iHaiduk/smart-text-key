@@ -25,6 +25,10 @@ mkdir -p "dist/SmartTextKey.app/Contents/Resources"
 # 4. Copy the compiled binary
 cp ".build/release/SmartTextKey" "dist/SmartTextKey.app/Contents/MacOS/SmartTextKey"
 
+# 4b. Copy Swift Package resource bundles required at runtime.
+echo "📦 Copying SwiftPM resource bundles..."
+find .build -path '*/release/*.bundle' -type d -exec cp -R {} "dist/SmartTextKey.app/Contents/Resources/" \;
+
 # 5. Create Info.plist with native accessory properties (LSUIElement hides Dock icon)
 echo "📝 Creating Info.plist..."
 cat <<EOF > "dist/SmartTextKey.app/Contents/Info.plist"
