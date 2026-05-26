@@ -41,6 +41,13 @@ public final class StatusBarController: NSObject, NSWindowDelegate {
     private func showContextMenu(_ sender: NSStatusBarButton) {
         let menu = NSMenu()
         
+        let activeConfig = AppSettings.shared.activeConfig
+        let modelItem = NSMenuItem(title: "Active Model: \(activeConfig.modelName) (\(activeConfig.name))", action: nil, keyEquivalent: "")
+        modelItem.isEnabled = false
+        menu.addItem(modelItem)
+        
+        menu.addItem(NSMenuItem.separator())
+        
         let settingsItem = NSMenuItem(title: "Settings...", action: #selector(openSettingsFromMenu), keyEquivalent: ",")
         settingsItem.target = self
         menu.addItem(settingsItem)

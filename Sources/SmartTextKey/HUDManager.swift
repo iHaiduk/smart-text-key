@@ -34,9 +34,18 @@ struct ProcessingHUDView: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
+            
+            Text("•")
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary.opacity(0.4))
+            
+            Text(settings.activeConfig.modelName)
+                .font(.system(size: 10, design: .monospaced))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
         }
         .padding(.horizontal, 14)
-        .frame(width: 340, height: 36)
+        .frame(width: 400, height: 36)
         .background(VisualEffectView(material: .hudWindow, blendingMode: .behindWindow).ignoresSafeArea())
         .clipShape(Capsule())
     }
@@ -71,7 +80,7 @@ public final class HUDManager {
         let hudView = ProcessingHUDView(actionTitle: actionTitle)
         let hostingController = NSHostingController(rootView: hudView)
         
-        let hudWidth: CGFloat = 340
+        let hudWidth: CGFloat = 400
         let hudHeight: CGFloat = 36
         
         // 1. Calculate X & Y to position HUD at the bottom-center of the visible screen area (above dock)

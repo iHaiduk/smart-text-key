@@ -58,8 +58,9 @@ public final class AIService: Sendable {
         }
         
         // 3. Execute with failover fallback support
+        var resultText: String
         do {
-            return try await executeRequest(config: config, action: action, finalPrompt: finalPrompt, onChunk: onChunk)
+            resultText = try await executeRequest(config: config, action: action, finalPrompt: finalPrompt, onChunk: onChunk)
         } catch {
             if let fallbackId = config.fallbackConfigId,
                let fallbackConfig = await apiSettings.apiConfigs.first(where: { $0.id == fallbackId }) {
@@ -71,11 +72,17 @@ public final class AIService: Sendable {
                 // Wait slightly before retry to ensure server switch is clean
                 try? await Task.sleep(for: .milliseconds(400))
                 
-                return try await executeRequest(config: fallbackConfig, action: action, finalPrompt: finalPrompt, onChunk: onChunk)
+                resultText = try await executeRequest(config: fallbackConfig, action: action, finalPrompt: finalPrompt, onChunk: onChunk)
             } else {
                 throw error
             }
         }
+        
+        if let suffix = action.responseSuffix, !suffix.isEmpty {
+            resultText += suffix
+        }
+        
+        return resultText
     }
     
     private func executeRequest(

@@ -89,3 +89,27 @@ struct KeychainTests {
         #expect(KeychainHelper.shared.read(key: testKey) == nil)
     }
 }
+
+@Suite("Prompt Action Response Suffix Tests")
+struct PromptActionTests {
+    @Test("Test prompt action response suffix is correctly stored and accessed")
+    func testResponseSuffixStoring() async throws {
+        let action = PromptAction(
+            title: "Test Action",
+            systemPrompt: "You are a test helper.",
+            template: "{{TEXT}}",
+            shortcutId: "test_action",
+            responseSuffix: "\n\nSuffix Added!"
+        )
+        
+        #expect(action.responseSuffix == "\n\nSuffix Added!")
+        
+        let actionWithoutSuffix = PromptAction(
+            title: "Test Action 2",
+            systemPrompt: "You are a test helper.",
+            template: "{{TEXT}}",
+            shortcutId: "test_action_2"
+        )
+        #expect(actionWithoutSuffix.responseSuffix == nil)
+    }
+}

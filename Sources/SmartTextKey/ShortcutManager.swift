@@ -6,6 +6,8 @@ public final class ShortcutManager {
     public static let shared = ShortcutManager()
     
     private var activeTask: Task<Void, Never>?
+    private var globalEscapeMonitor: Any?
+    private var localEscapeMonitor: Any?
     
     private init() {}
     
@@ -41,6 +43,22 @@ public final class ShortcutManager {
     func triggerAction(_ action: PromptAction) async {
         print("Smart Text Key: Global hotkey triggered for action: [\(action.title)]")
         
+        // Wait slightly to ensure user has released hotkey modifier keys (e.g. Cmd, Shift, Option)
+        // so that they don't collide with simulated keystrokes.
+        try? await Task.sleep(nanoseconds: 150_000_000)
+        
+        // Clean up Escape monitors automatically when triggerAction completes or is cancelled
+        defer {
+            if let monitor = globalEscapeMonitor {
+                NSEvent.removeMonitor(monitor)
+                globalEscapeMonitor = nil
+            }
+            if let monitor = localEscapeMonitor {
+                NSEvent.removeMonitor(monitor)
+                localEscapeMonitor = nil
+            }
+        }
+        
         // Play audio start sound cue
         SoundManager.shared.play(.start)
         
@@ -57,6 +75,23 @@ public final class ShortcutManager {
         if Task.isCancelled {
             ClipboardManager.shared.restorePasteboard(backup)
             return
+        }
+        
+        // Register global and local monitors for Escape key (53) during streaming
+        globalEscapeMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            if event.keyCode == 53 { // Escape
+                print("Smart Text Key: Escape key pressed globally. Cancelling active task...")
+                self?.cancelActiveTask()
+            }
+        }
+        
+        localEscapeMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            if event.keyCode == 53 { // Escape
+                print("Smart Text Key: Escape key pressed locally. Cancelling active task...")
+                self?.cancelActiveTask()
+                return nil // consume event
+            }
+            return event
         }
         
         print("Smart Text Key: Captured \(capturedText.count) characters. Activating AI pipeline...")
