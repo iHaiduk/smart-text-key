@@ -27,7 +27,7 @@ public struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Smart Text Key")
                             .font(.system(size: 15, weight: .bold, design: .rounded))
-                        Text("v1.1.0")
+                        Text("v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.1.1")")
                             .font(.system(size: 10))
                             .foregroundStyle(.secondary)
                     }

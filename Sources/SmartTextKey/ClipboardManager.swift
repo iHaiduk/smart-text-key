@@ -14,6 +14,9 @@ public final class ClipboardManager {
     /// so the paste flow knows to re-select with the same strategy.
     private(set) var usedSelectAll = false
     
+    /// Tracks whether the text was captured from an existing user selection.
+    private(set) var hadSelectionInitially = false
+    
     private init() {}
     
     /// Checks whether accessibility permissions are granted. If not and `prompt` is true, triggers macOS native system dialog.
@@ -29,6 +32,7 @@ public final class ClipboardManager {
         // 0. Remember which app the user is working in so we can re-activate it before paste
         sourceApplication = NSWorkspace.shared.frontmostApplication
         usedSelectAll = false
+        hadSelectionInitially = false
         
         // 1. Ensure Accessibility access
         guard checkAccessibilityPermissions(prompt: true) else {
@@ -56,6 +60,10 @@ public final class ClipboardManager {
         
         // 6. Read pasteboard content
         var capturedText = pasteboard.string(forType: .string)
+        
+        if let text = capturedText, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            hadSelectionInitially = true
+        }
         
         // 6b. Smart Caret-to-Start Selection (Strategy 1):
         // If nothing is selected, try Cmd+Shift+Up to select from the very beginning
@@ -163,9 +171,11 @@ public final class ClipboardManager {
         }
         
         // 2. Re-select the original text so that Cmd+V *replaces* it instead of inserting.
-        //    Use the same strategy that captured it: Cmd+A if selectAll was used,
-        //    otherwise Cmd+Shift+Up to re-select from caret to document start.
-        if usedSelectAll {
+        //    If the user had an initial selection, we don't simulate any selection key strokes
+        //    since the target app preserves their active selection upon reactivation.
+        if hadSelectionInitially {
+            // Do nothing, the active selection is already preserved in the reactivated app.
+        } else if usedSelectAll {
             await selectAll()
         } else {
             await growSelectionToCaret()
