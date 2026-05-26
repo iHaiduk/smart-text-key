@@ -69,9 +69,22 @@ graph TD
 - macOS 14.0 or newer.
 - Xcode 15.0+ or Swift Toolchain 6.0+.
 
-### Building & Compilation
+### 📥 Quick Install (DMG)
 
-Clone the repository and build using the Swift Package Manager:
+On every release, an automated GitHub Actions pipeline compiles and packages the app natively into a drag-and-drop installer:
+1. Go to the **GitHub Actions** tab or **Releases** of the repository.
+2. Download the `SmartTextKey-Installer-DMG` artifact.
+3. Open `SmartTextKey.dmg`, drag the **Smart Text Key** icon into your **Applications** folder, and launch!
+
+### Building & Compilation Local
+
+If you want to package a custom DMG locally, we provide a unified packaging script:
+```bash
+./scripts/package_dmg.sh
+```
+This automatically compiles the source code in release mode, generates the high-quality multi-resolution `.icns` files natively, sets the accessory plist attributes, and outputs the UDZO compressed installer at `SmartTextKey.dmg`.
+
+Or compile manually using the Swift Package Manager:
 
 ```bash
 git clone https://github.com/your-username/smart-text-key.git
