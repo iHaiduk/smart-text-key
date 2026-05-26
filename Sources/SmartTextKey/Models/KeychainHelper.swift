@@ -9,11 +9,21 @@ public final class KeychainHelper: Sendable {
     private let lock = NSLock()
 
     private init() {
-        guard let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
-            fatalError("Could not access application support directory")
+        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+        let directory: URL
+        if let appSupport = appSupport {
+            directory = appSupport.appendingPathComponent("SmartTextKey")
+        } else {
+            directory = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("SmartTextKey")
+            print("Smart Text Key [Keychain]: Warning - Application Support directory not found, falling back to temporary directory.")
         }
-        let directory = appSupport.appendingPathComponent("SmartTextKey")
-        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        
+        do {
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        } catch {
+            print("Smart Text Key [Keychain]: Error creating directory at \(directory.path): \(error)")
+        }
+        
         self.legacyStorageURL = directory.appendingPathComponent(".secure_keys.json")
     }
 

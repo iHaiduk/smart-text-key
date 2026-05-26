@@ -59,16 +59,29 @@ public final class AppSettings {
         }
     }
 
+    public var launchAtLoginError: String? = nil
+
     public var launchAtLogin: Bool {
         didSet {
             userDefaults.set(launchAtLogin, forKey: "launchAtLogin")
             let service = SMAppService.mainApp
-            if launchAtLogin {
-                try? service.register()
-            } else {
-                try? service.unregister()
+            do {
+                if launchAtLogin {
+                    try service.register()
+                } else {
+                    try service.unregister()
+                }
+                launchAtLoginError = nil
+            } catch {
+                let errorMsg = "Failed to \(launchAtLogin ? "enable" : "disable") launch at login: \(error.localizedDescription)"
+                print("Smart Text Key [AppSettings]: \(errorMsg)")
+                launchAtLoginError = errorMsg
             }
         }
+    }
+
+    public var databaseDiagnosticError: String? {
+        HistoryManager.shared.databaseError
     }
 
     public var themeAccentColor: SwiftUI.Color {

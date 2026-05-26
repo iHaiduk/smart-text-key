@@ -2,9 +2,10 @@ import Foundation
 import SQLite3
 
 @MainActor
-public final class HistoryManager {
+public final class HistoryManager: HistoryStoreProtocol {
     public static let shared = HistoryManager()
     
+    public private(set) var databaseError: String? = nil
     private var db: OpaquePointer?
     private var customDbPath: String?
     
@@ -19,6 +20,7 @@ public final class HistoryManager {
             self.db = nil
         }
         self.customDbPath = path
+        self.databaseError = nil
         setupDatabase()
     }
     
@@ -29,7 +31,9 @@ public final class HistoryManager {
             dbPath = custom
         } else {
             guard let appSupportURL = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
-                print("Smart Text Key [HistoryManager]: Failed to get Application Support directory.")
+                let errorMsg = "Failed to get Application Support directory."
+                print("Smart Text Key [HistoryManager]: \(errorMsg)")
+                self.databaseError = errorMsg
                 return
             }
             
@@ -37,7 +41,9 @@ public final class HistoryManager {
             do {
                 try FileManager.default.createDirectory(at: dbDirectory, withIntermediateDirectories: true, attributes: nil)
             } catch {
-                print("Smart Text Key [HistoryManager]: Failed to create database directory: \(error)")
+                let errorMsg = "Failed to create database directory: \(error.localizedDescription)"
+                print("Smart Text Key [HistoryManager]: \(errorMsg)")
+                self.databaseError = errorMsg
                 return
             }
             
@@ -49,7 +55,9 @@ public final class HistoryManager {
             print("Smart Text Key [HistoryManager]: SQLite database opened successfully at \(dbPath)")
             createTable()
         } else {
-            print("Smart Text Key [HistoryManager]: Failed to open SQLite database at \(dbPath).")
+            let errorMsg = "Failed to open SQLite database at \(dbPath)."
+            print("Smart Text Key [HistoryManager]: \(errorMsg)")
+            self.databaseError = errorMsg
             if let db = db {
                 sqlite3_close(db)
                 self.db = nil
@@ -72,13 +80,25 @@ public final class HistoryManager {
         if sqlite3_exec(db, createTableSQL, nil, nil, &errorPointer) != SQLITE_OK {
             let errorMsg = errorPointer.map { String(cString: $0) } ?? "Unknown error"
             print("Smart Text Key [HistoryManager]: Failed to create table: \(errorMsg)")
+            self.databaseError = "Failed to create table: \(errorMsg)"
             if let errorPointer = errorPointer {
                 sqlite3_free(errorPointer)
             }
         }
         
         let alterTableSQL = "ALTER TABLE transformations ADD COLUMN model_name TEXT;"
-        sqlite3_exec(db, alterTableSQL, nil, nil, nil) // Ignore error if it already exists
+        var alterErrorPointer: UnsafeMutablePointer<Int8>?
+        let status = sqlite3_exec(db, alterTableSQL, nil, nil, &alterErrorPointer)
+        if status != SQLITE_OK {
+            let errorMsg = alterErrorPointer.map { String(cString: $0) } ?? "Unknown error"
+            if !errorMsg.contains("duplicate column name") {
+                print("Smart Text Key [HistoryManager]: Failed to alter table: \(errorMsg)")
+                self.databaseError = "Failed to migrate database schema: \(errorMsg)"
+            }
+            if let alterErrorPointer = alterErrorPointer {
+                sqlite3_free(alterErrorPointer)
+            }
+        }
     }
     
     public func logTransformation(promptTitle: String, inputText: String, outputText: String, modelName: String) {

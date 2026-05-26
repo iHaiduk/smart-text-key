@@ -3,19 +3,19 @@ import Carbon
 import ApplicationServices
 
 @MainActor
-public final class ClipboardManager {
+public final class ClipboardManager: ClipboardClientProtocol {
     public static let shared = ClipboardManager()
 
     /// Tracks the application that was focused when text capture started,
     /// so we can re-activate it before pasting the AI result back.
-    private(set) var sourceApplication: NSRunningApplication?
+    public private(set) var sourceApplication: NSRunningApplication?
 
     /// Tracks whether `Cmd+A` (select-all) was used during the last capture,
     /// so the paste flow knows to re-select with the same strategy.
-    private(set) var usedSelectAll = false
+    public private(set) var usedSelectAll = false
 
     /// Tracks whether the text was captured from an existing user selection.
-    private(set) var hadSelectionInitially = false
+    public private(set) var hadSelectionInitially = false
 
     private enum Timing {
         static let modifierRelease: Duration = .milliseconds(150)
@@ -39,17 +39,21 @@ public final class ClipboardManager {
     }
 
     /// Safely captures selected text using a simulated Cmd+C keystroke.
-    /// Returns a tuple containing the captured text and the backup dictionary of the clipboard before capture.
+    /// Returns a tuple containing the captured text, the backup dictionary, and original clipboard text before capture.
     /// Returns nil if permissions are missing or no text was selected (aborted).
-    public func captureSelectedText() async -> (text: String, backup: [NSPasteboard.PasteboardType: Data])? {
+    public func captureSelectedText() async -> (text: String, backup: [NSPasteboard.PasteboardType: Data], originalClipboardText: String)? {
         sourceApplication = NSWorkspace.shared.frontmostApplication
         hadSelectionInitially = false
+        usedSelectAll = false
 
         // 1. Ensure Accessibility access
         guard checkAccessibilityPermissions(prompt: true) else {
             print("Smart Text Key: Missing Accessibility permissions.")
             return nil
         }
+
+        // Get original clipboard text before clearing/overwriting
+        let originalClipboardText = NSPasteboard.general.string(forType: .string) ?? ""
 
         // 2. Backup current clipboard content
         let backup = backupPasteboard()
@@ -79,7 +83,7 @@ public final class ClipboardManager {
             return nil
         }
 
-        return (text: finalCaptured, backup: backup)
+        return (text: finalCaptured, backup: backup, originalClipboardText: originalClipboardText)
     }
 
     /// Simulates Cmd+A to select all text in the active application.
@@ -95,7 +99,7 @@ public final class ClipboardManager {
     /// Writes the result to the clipboard, re-activates the source application,
     /// re-selects the original text, simulates a Cmd+V paste (replacing the selection),
     /// and restores original clipboard contents.
-    public func pasteResultText(_ text: String, originalBackup: [NSPasteboard.PasteboardType: Data]) async {
+    public func pasteResultText(_ text: String, originalBackup: [NSPasteboard.PasteboardType: Data], sourceApplication: NSRunningApplication?) async {
         // 1. Re-activate the source application that was focused during capture.
         //    This is critical because the popover/HUD may have stolen focus.
         if let sourceApp = sourceApplication {

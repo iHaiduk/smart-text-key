@@ -25,7 +25,7 @@ public enum AIError: Error, LocalizedError {
     }
 }
 
-public final class AIService: Sendable {
+public final class AIService: AIClientProtocol, Sendable {
     public static let shared = AIService()
 
     private init() {}
@@ -33,17 +33,18 @@ public final class AIService: Sendable {
     /// Processes a PromptAction by substituting template tags,
     /// executing HTTP requests with streaming support,
     /// and offering failover fallbacks.
+    @MainActor
     public func process(
         action: PromptAction,
         capturedText: String,
+        originalClipboardText: String,
         onChunk: (@Sendable (String) -> Void)? = nil
     ) async throws -> String {
-        let clipboardText = await MainActor.run { NSPasteboard.general.string(forType: .string) ?? "" }
-        let appName = await MainActor.run { NSWorkspace.shared.frontmostApplication?.localizedName ?? "Active App" }
+        let appName = NSWorkspace.shared.frontmostApplication?.localizedName ?? "Active App"
         let dateStr = DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .short)
 
         var finalPrompt = action.template.replacingOccurrences(of: "{{TEXT}}", with: capturedText)
-        finalPrompt = finalPrompt.replacingOccurrences(of: "{{CLIPBOARD}}", with: clipboardText)
+        finalPrompt = finalPrompt.replacingOccurrences(of: "{{CLIPBOARD}}", with: originalClipboardText)
         finalPrompt = finalPrompt.replacingOccurrences(of: "{{DATE}}", with: dateStr)
         finalPrompt = finalPrompt.replacingOccurrences(of: "{{CURRENT_APP}}", with: appName)
 

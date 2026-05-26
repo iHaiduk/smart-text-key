@@ -70,7 +70,7 @@ struct ProcessingHUDView: View {
 
 // MARK: - HUD Manager
 @MainActor
-public final class HUDManager {
+public final class HUDManager: HUDPresenterProtocol {
     public static let shared = HUDManager()
     
     private var hudPanel: NSPanel?
@@ -90,7 +90,7 @@ public final class HUDManager {
     }
     
     /// Spawns a minimal horizontal capsule HUD at the bottom-center of the active screen.
-    public func showHUD(actionTitle: String, modelName: String) {
+    public func showHUD(actionTitle: String, modelName: String, screen: NSScreen?) {
         // Dismiss any existing HUD immediately without animations
         dismissHUD(animated: false)
         
@@ -101,8 +101,9 @@ public final class HUDManager {
         let hudHeight: CGFloat = 36
         
         // 1. Calculate X & Y to position HUD at the bottom-center of the visible screen area (above dock)
-        guard let screen = NSScreen.main ?? NSScreen.screens.first else { return }
-        let screenFrame = screen.visibleFrame
+        let targetScreen = screen ?? NSScreen.screenWithMouse ?? NSScreen.main ?? NSScreen.screens.first
+        guard let activeScreen = targetScreen else { return }
+        let screenFrame = activeScreen.visibleFrame
         
         let x = screenFrame.origin.x + (screenFrame.width - hudWidth) / 2
         let y = screenFrame.origin.y + 36 // 36 pt offset from screen bottom visible frame boundary
@@ -160,6 +161,7 @@ public final class HUDManager {
     public func showPopover(
         resultText: String,
         promptTitle: String,
+        screen: NSScreen?,
         onPaste: @escaping @MainActor () -> Void,
         onCopy: @escaping @MainActor () -> Void,
         onRegenerate: @escaping @MainActor () -> Void,
@@ -192,8 +194,9 @@ public final class HUDManager {
         let popoverWidth: CGFloat = 480
         let popoverHeight: CGFloat = 380
         
-        guard let screen = NSScreen.main ?? NSScreen.screens.first else { return }
-        let screenFrame = screen.visibleFrame
+        let targetScreen = screen ?? NSScreen.screenWithMouse ?? NSScreen.main ?? NSScreen.screens.first
+        guard let activeScreen = targetScreen else { return }
+        let screenFrame = activeScreen.visibleFrame
         
         let x = screenFrame.origin.x + (screenFrame.width - popoverWidth) / 2
         let y = screenFrame.origin.y + 48
@@ -253,5 +256,13 @@ public final class HUDManager {
 class InteractiveHUDPanel: NSPanel {
     override var canBecomeKey: Bool {
         return true
+    }
+}
+
+// MARK: - NSScreen Extension
+extension NSScreen {
+    public static var screenWithMouse: NSScreen? {
+        let mouseLocation = NSEvent.mouseLocation
+        return NSScreen.screens.first { NSMouseInRect(mouseLocation, $0.frame, false) }
     }
 }

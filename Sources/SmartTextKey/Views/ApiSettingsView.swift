@@ -132,6 +132,20 @@ struct ApiSettingsView: View {
                         .toggleStyle(.checkbox)
                         .tint(settings.themeAccentColor)
                 }
+
+                if let loginError = settings.launchAtLoginError {
+                    Label(loginError, systemImage: "exclamationmark.triangle.fill")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(.red)
+                        .padding(.top, 2)
+                }
+
+                if let dbError = settings.databaseDiagnosticError {
+                    Label(dbError, systemImage: "exclamationmark.triangle.fill")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(.red)
+                        .padding(.top, 2)
+                }
             }
         }
         .padding(16)
