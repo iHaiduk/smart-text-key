@@ -133,6 +133,26 @@ If **"Show Preview Popover"** is enabled, pressing the hotkey pops up an elegant
 
 ---
 
+## Troubleshooting
+
+### “SmartTextKey” is damaged and can’t be opened
+
+If you downloaded a GitHub release DMG and macOS shows this message, the build was packaged without Apple code signing and notarization. The app contents are not necessarily corrupted, but Gatekeeper blocks the launch.
+
+Local workaround for a trusted build:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/SmartTextKey.app
+```
+
+Permanent release-side fix:
+
+1. Configure `CODE_SIGN_IDENTITY` in GitHub Actions secrets.
+2. Configure `NOTARY_PROFILE` in GitHub Actions secrets.
+3. Rebuild and republish the DMG so the app is signed and notarized.
+
+---
+
 ## 🔒 Security & Privacy
 
 Smart Text Key values your security and privacy above all:
