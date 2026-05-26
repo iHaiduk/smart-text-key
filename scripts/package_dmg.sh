@@ -25,9 +25,19 @@ mkdir -p "dist/SmartTextKey.app/Contents/Resources"
 # 4. Copy the compiled binary
 cp ".build/release/SmartTextKey" "dist/SmartTextKey.app/Contents/MacOS/SmartTextKey"
 
+# 4a. Fix SPM bundle bug by patching the accessor path inside the compiled binary
+# KeyboardShortcuts_KeyboardShortcuts.bundle (42 chars) -> Contents/Resources/KeyboardShortcut.bundle (42 chars)
+perl -pi -e 's/KeyboardShortcuts_KeyboardShortcuts\.bundle/Contents\/Resources\/KeyboardShortcut\.bundle/g' "dist/SmartTextKey.app/Contents/MacOS/SmartTextKey"
+
 # 4b. Copy Swift Package resource bundles required at runtime.
 echo "📦 Copying SwiftPM resource bundles..."
 find .build -path '*/release/*.bundle' -type d -exec cp -R {} "dist/SmartTextKey.app/Contents/Resources/" \;
+
+# Rename the KeyboardShortcuts bundle to match our binary patch
+if [ -d "dist/SmartTextKey.app/Contents/Resources/KeyboardShortcuts_KeyboardShortcuts.bundle" ]; then
+    mv "dist/SmartTextKey.app/Contents/Resources/KeyboardShortcuts_KeyboardShortcuts.bundle" "dist/SmartTextKey.app/Contents/Resources/KeyboardShortcut.bundle"
+fi
+
 
 # 5. Create Info.plist with native accessory properties (LSUIElement hides Dock icon)
 echo "📝 Creating Info.plist..."
@@ -87,7 +97,8 @@ if [ -n "${CODE_SIGN_IDENTITY:-}" ]; then
     echo "🔐 Signing app bundle..."
     codesign --force --deep --options runtime --sign "$CODE_SIGN_IDENTITY" "dist/SmartTextKey.app"
 else
-    echo "ℹ️ CODE_SIGN_IDENTITY not set. Skipping app signing."
+    echo "ℹ️ CODE_SIGN_IDENTITY not set. Using ad-hoc signature..."
+    codesign --force --deep --sign - "dist/SmartTextKey.app"
 fi
 
 # 8. Add drag-and-drop installation symlink to /Applications
