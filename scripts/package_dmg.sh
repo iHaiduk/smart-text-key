@@ -38,6 +38,10 @@ if [ -d "dist/SmartTextKey.app/Contents/Resources/KeyboardShortcuts_KeyboardShor
     mv "dist/SmartTextKey.app/Contents/Resources/KeyboardShortcuts_KeyboardShortcuts.bundle" "dist/SmartTextKey.app/Contents/Resources/KeyboardShortcut.bundle"
 fi
 
+# 4c. Fix permissions on copied files (SwiftPM dependencies are often read-only, which breaks xattr for users)
+echo "🔧 Fixing permissions on app bundle..."
+chmod -R u+w "dist/SmartTextKey.app"
+
 
 # 5. Create Info.plist with native accessory properties (LSUIElement hides Dock icon)
 echo "📝 Creating Info.plist..."
