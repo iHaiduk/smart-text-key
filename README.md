@@ -9,6 +9,16 @@
 
 Designed for developers, writers, and power users who want friction-free AI integrations without heavy dependencies, context switches, or recurring authorization prompts.
 
+## 🗺️ Quick Map
+
+- [✨ Features](#-features)
+- [💻 Tech Stack & Design](#-tech-stack--design)
+- [🚀 Getting Started](#-getting-started)
+- [📖 How to Use](#-how-to-use)
+- [Troubleshooting](#troubleshooting)
+- [🔒 Security & Privacy](#-security--privacy)
+- [📄 License](#-license)
+
 ---
 
 ## ✨ Features
