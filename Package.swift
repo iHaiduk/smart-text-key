@@ -15,7 +15,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/sindresorhus/KeyboardShortcuts", from: "2.2.0")
+        .package(url: "https://github.com/sindresorhus/KeyboardShortcuts", "2.0.0"..<"2.1.0")
     ],
     targets: [
         .executableTarget(
