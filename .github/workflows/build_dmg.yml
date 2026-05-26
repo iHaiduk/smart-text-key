@@ -16,7 +16,14 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Run DMG Packager Script
-      run: ./scripts/package_dmg.sh
+      run: |
+        ./scripts/package_dmg.sh > build_output.log 2>&1 || {
+          echo "### ❌ Build Failure Details" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat build_output.log >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          exit 1
+        }
 
     - name: Upload Installer Artifact
       uses: actions/upload-artifact@v4
