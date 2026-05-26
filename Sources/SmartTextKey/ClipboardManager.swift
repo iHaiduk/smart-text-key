@@ -5,26 +5,40 @@ import ApplicationServices
 @MainActor
 public final class ClipboardManager {
     public static let shared = ClipboardManager()
-    
+
     /// Tracks the application that was focused when text capture started,
     /// so we can re-activate it before pasting the AI result back.
     private(set) var sourceApplication: NSRunningApplication?
-    
+
     /// Tracks whether `Cmd+A` (select-all) was used during the last capture,
     /// so the paste flow knows to re-select with the same strategy.
     private(set) var usedSelectAll = false
-    
+
     /// Tracks whether the text was captured from an existing user selection.
     private(set) var hadSelectionInitially = false
-    
+
+    private enum Timing {
+        static let modifierRelease: Duration = .milliseconds(50)
+        static let copyTimeout: Duration = .milliseconds(300)
+        static let pasteboardPoll: Duration = .milliseconds(20)
+        static let sourceAppActivation: Duration = .milliseconds(200)
+        static let pasteCompletion: Duration = .milliseconds(150)
+    }
+
+    private enum SelectionStrategy {
+        case currentSelection
+        case caretToStart
+        case selectAll
+    }
+
     private init() {}
-    
+
     /// Checks whether accessibility permissions are granted. If not and `prompt` is true, triggers macOS native system dialog.
     public func checkAccessibilityPermissions(prompt: Bool = true) -> Bool {
         let options = ["AXTrustedCheckOptionPrompt": prompt]
         return AXIsProcessTrustedWithOptions(options as CFDictionary)
     }
-    
+
     /// Safely captures selected text using a simulated Cmd+C keystroke.
     /// Returns a tuple containing the captured text and the backup dictionary of the clipboard before capture.
     /// Returns nil if permissions are missing or no text was selected (aborted).
@@ -33,91 +47,50 @@ public final class ClipboardManager {
         sourceApplication = NSWorkspace.shared.frontmostApplication
         usedSelectAll = false
         hadSelectionInitially = false
-        
+
         // 1. Ensure Accessibility access
         guard checkAccessibilityPermissions(prompt: true) else {
             print("Smart Text Key: Missing Accessibility permissions.")
             return nil
         }
-        
+
         // 2. Backup current clipboard content
         let backup = backupPasteboard()
-        
-        // 3. Clear pasteboard
+
         let pasteboard = NSPasteboard.general
-        pasteboard.clearContents()
-        
-        // 4. Simulate Cmd+C
-        simulateCopy()
-        
-        // 5. Short sleep (100ms) to allow target application to process Cmd+C and update general pasteboard
-        do {
-            try await Task.sleep(nanoseconds: 100_000_000)
-        } catch {
-            restorePasteboard(backup)
-            return nil
-        }
-        
-        // 6. Read pasteboard content
-        var capturedText = pasteboard.string(forType: .string)
-        
-        if let text = capturedText, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        var capturedText = await captureText(from: pasteboard, using: .currentSelection)
+
+        if hasMeaningfulText(capturedText) {
             hadSelectionInitially = true
         }
-        
-        // 6b. Smart Caret-to-Start Selection (Strategy 1):
+
+        // 4. Smart Caret-to-Start Selection (Strategy 1):
         // If nothing is selected, try Cmd+Shift+Up to select from the very beginning
         // of the focused input up to the current cursor (caret) position.
-        if capturedText == nil || capturedText!.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        if !hasMeaningfulText(capturedText) {
             print("Smart Text Key: Selection empty. Strategy 1: Cmd+Shift+Up (select to start of field)...")
-            await growSelectionToCaret()
-            
-            // Re-simulate Cmd+C
-            pasteboard.clearContents()
-            simulateCopy()
-            
-            do {
-                try await Task.sleep(nanoseconds: 120_000_000)
-            } catch {
-                restorePasteboard(backup)
-                return nil
-            }
-            
-            capturedText = pasteboard.string(forType: .string)
+            capturedText = await captureText(from: pasteboard, using: .caretToStart)
         }
-        
-        // 6c. Fallback Selection (Strategy 2):
+
+        // 5. Fallback Selection (Strategy 2):
         // If Cmd+Shift+Up didn't work (custom editors like SnippetsLab),
         // fall back to Cmd+A which is universally supported.
-        if capturedText == nil || capturedText!.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        if !hasMeaningfulText(capturedText) {
             print("Smart Text Key: Strategy 1 failed. Strategy 2: Cmd+A (select all)...")
-            await selectAll()
             usedSelectAll = true
-            
-            // Re-simulate Cmd+C
-            pasteboard.clearContents()
-            simulateCopy()
-            
-            do {
-                try await Task.sleep(nanoseconds: 120_000_000)
-            } catch {
-                restorePasteboard(backup)
-                return nil
-            }
-            
-            capturedText = pasteboard.string(forType: .string)
+            capturedText = await captureText(from: pasteboard, using: .selectAll)
         }
-        
-        guard let finalCaptured = capturedText, !finalCaptured.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+
+        guard let finalCaptured = capturedText, hasMeaningfulText(capturedText) else {
             print("Smart Text Key: Idle protection - No text selected, aborting flow.")
             // Restore previous clipboard content if no text was captured
             restorePasteboard(backup)
             return nil
         }
-        
+
         return (text: finalCaptured, backup: backup)
     }
-    
+
     /// Simulates a macOS keyboard shortcut to select all text from the very beginning
     /// of the focused input field up to the current cursor (caret) position.
     ///
@@ -136,12 +109,10 @@ public final class ClipboardManager {
             keyCode: CGKeyCode(kVK_UpArrow),
             flags: [.maskCommand, .maskShift]
         )
-        
-        do {
-            try await Task.sleep(nanoseconds: 50_000_000)
-        } catch {}
+
+        try? await Task.sleep(for: Timing.modifierRelease)
     }
-    
+
     /// Universal fallback: simulates Cmd+A to select all text in the focused field.
     /// Works in virtually every macOS application including custom code editors.
     private func selectAll() async {
@@ -149,12 +120,10 @@ public final class ClipboardManager {
             keyCode: CGKeyCode(kVK_ANSI_A),
             flags: .maskCommand
         )
-        
-        do {
-            try await Task.sleep(nanoseconds: 50_000_000)
-        } catch {}
+
+        try? await Task.sleep(for: Timing.modifierRelease)
     }
-    
+
     /// Writes the result to the clipboard, re-activates the source application,
     /// re-selects the original text, simulates a Cmd+V paste (replacing the selection),
     /// and restores original clipboard contents.
@@ -163,13 +132,11 @@ public final class ClipboardManager {
         //    This is critical because the popover/HUD may have stolen focus.
         if let sourceApp = sourceApplication {
             sourceApp.activate()
-            
+
             // Give the target app time to regain focus and keyboard input
-            do {
-                try await Task.sleep(nanoseconds: 200_000_000)
-            } catch {}
+            try? await Task.sleep(for: Timing.sourceAppActivation)
         }
-        
+
         // 2. Re-select the original text so that Cmd+V *replaces* it instead of inserting.
         //    If the user had an initial selection, we don't simulate any selection key strokes
         //    since the target app preserves their active selection upon reactivation.
@@ -180,26 +147,24 @@ public final class ClipboardManager {
         } else {
             await growSelectionToCaret()
         }
-        
+
         // 3. Place the AI result on the clipboard
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
         pasteboard.setString(text, forType: .string)
-        
+
         // 4. Simulate Cmd+V — this replaces the highlighted selection with the new text
         simulatePaste()
-        
+
         // 5. Small delay (150ms) to let active application pull the text from the pasteboard
-        do {
-            try await Task.sleep(nanoseconds: 150_000_000)
-        } catch {}
-        
+        try? await Task.sleep(for: Timing.pasteCompletion)
+
         // 6. Restore user's original clipboard content
         restorePasteboard(originalBackup)
     }
-    
+
     // MARK: - Clipboard Backup & Restore Helpers
-    
+
     public func backupPasteboard() -> [NSPasteboard.PasteboardType: Data] {
         let pasteboard = NSPasteboard.general
         var backedUpData: [NSPasteboard.PasteboardType: Data] = [:]
@@ -212,7 +177,7 @@ public final class ClipboardManager {
         }
         return backedUpData
     }
-    
+
     public func restorePasteboard(_ backup: [NSPasteboard.PasteboardType: Data]) {
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
@@ -220,26 +185,68 @@ public final class ClipboardManager {
             pasteboard.setData(data, forType: type)
         }
     }
-    
+
     // MARK: - Event Simulations (CGEvent)
-    
+
     private func simulateCopy() {
         simulateKeystroke(keyCode: CGKeyCode(kVK_ANSI_C), flags: .maskCommand)
     }
-    
+
     private func simulatePaste() {
         simulateKeystroke(keyCode: CGKeyCode(kVK_ANSI_V), flags: .maskCommand)
     }
-    
+
     private func simulateKeystroke(keyCode: CGKeyCode, flags: CGEventFlags) {
         let source = CGEventSource(stateID: .combinedSessionState)
-        
+
         let keyDown = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: true)
         keyDown?.flags = flags
         keyDown?.post(tap: .cghidEventTap)
-        
+
         let keyUp = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: false)
         keyUp?.flags = flags
         keyUp?.post(tap: .cghidEventTap)
+    }
+
+    private func captureText(from pasteboard: NSPasteboard, using strategy: SelectionStrategy) async -> String? {
+        switch strategy {
+        case .currentSelection:
+            break
+        case .caretToStart:
+            await growSelectionToCaret()
+        case .selectAll:
+            await selectAll()
+        }
+
+        pasteboard.clearContents()
+        let changeCount = pasteboard.changeCount
+        simulateCopy()
+        return await waitForPasteboardString(on: pasteboard, after: changeCount)
+    }
+
+    private func waitForPasteboardString(on pasteboard: NSPasteboard, after changeCount: Int) async -> String? {
+        let clock = ContinuousClock()
+        let deadline = clock.now.advanced(by: Timing.copyTimeout)
+
+        while clock.now < deadline {
+            if pasteboard.changeCount != changeCount, let text = pasteboard.string(forType: .string) {
+                return text
+            }
+
+            if Task.isCancelled {
+                return nil
+            }
+
+            try? await Task.sleep(for: Timing.pasteboardPoll)
+        }
+
+        return pasteboard.string(forType: .string)
+    }
+
+    private func hasMeaningfulText(_ text: String?) -> Bool {
+        guard let text else {
+            return false
+        }
+        return !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 }

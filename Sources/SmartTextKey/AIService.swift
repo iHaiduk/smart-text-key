@@ -1,5 +1,6 @@
-import Foundation
 import AppKit
+import Carbon
+import Foundation
 
 public enum AIError: Error, LocalizedError {
     case invalidURL
@@ -7,7 +8,7 @@ public enum AIError: Error, LocalizedError {
     case invalidResponse
     case apiError(Int, String)
     case emptyChoice
-    
+
     public var errorDescription: String? {
         switch self {
         case .invalidURL:
@@ -26,28 +27,26 @@ public enum AIError: Error, LocalizedError {
 
 public final class AIService: Sendable {
     public static let shared = AIService()
-    
+
     private init() {}
-    
+
     /// Processes a PromptAction by substituting template tags,
-    /// executing HTTP requests with Server-Sent Events (SSE) streaming support,
+    /// executing HTTP requests with streaming support,
     /// and offering failover fallbacks.
     public func process(
         action: PromptAction,
         capturedText: String,
         onChunk: (@Sendable (String) -> Void)? = nil
     ) async throws -> String {
-        // 1. Substitute variables on MainActor safely
         let clipboardText = await MainActor.run { NSPasteboard.general.string(forType: .string) ?? "" }
         let appName = await MainActor.run { NSWorkspace.shared.frontmostApplication?.localizedName ?? "Active App" }
         let dateStr = DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .short)
-        
+
         var finalPrompt = action.template.replacingOccurrences(of: "{{TEXT}}", with: capturedText)
         finalPrompt = finalPrompt.replacingOccurrences(of: "{{CLIPBOARD}}", with: clipboardText)
         finalPrompt = finalPrompt.replacingOccurrences(of: "{{DATE}}", with: dateStr)
         finalPrompt = finalPrompt.replacingOccurrences(of: "{{CURRENT_APP}}", with: appName)
-        
-        // 2. Fetch API configuration (action-specific or fallback to global active profile)
+
         let apiSettings = await AppSettings.shared
         let config: APIConfig
         if let boundId = action.apiConfigId,
@@ -56,8 +55,7 @@ public final class AIService: Sendable {
         } else {
             config = await apiSettings.activeConfig
         }
-        
-        // 3. Execute with failover fallback support
+
         var resultText: String
         do {
             resultText = try await executeRequest(config: config, action: action, finalPrompt: finalPrompt, onChunk: onChunk)
@@ -65,186 +63,65 @@ public final class AIService: Sendable {
             if let fallbackId = config.fallbackConfigId,
                let fallbackConfig = await apiSettings.apiConfigs.first(where: { $0.id == fallbackId }) {
                 print("Smart Text Key [AIService]: Primary API failed. Retrying with fallback: [\(fallbackConfig.name)]")
-                
-                // Play warning sound on failover
                 SoundManager.shared.play(.failure)
-                
-                // Wait slightly before retry to ensure server switch is clean
-                try? await Task.sleep(for: .milliseconds(400))
-                
+                try await Task.sleep(for: .milliseconds(400))
                 resultText = try await executeRequest(config: fallbackConfig, action: action, finalPrompt: finalPrompt, onChunk: onChunk)
             } else {
                 throw error
             }
         }
-        
+
         if let suffix = action.responseSuffix, !suffix.isEmpty {
             resultText += suffix
         }
-        
+
         return resultText
     }
-    
+
     private func executeRequest(
         config: APIConfig,
         action: PromptAction,
         finalPrompt: String,
         onChunk: (@Sendable (String) -> Void)?
     ) async throws -> String {
-        let baseURLString = config.apiBaseURL
-        let apiKey = config.apiKey
-        let modelName = config.modelName
-        
-        var cleanURLString = baseURLString.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !cleanURLString.hasSuffix("/") {
-            cleanURLString += "/"
-        }
-        cleanURLString += "chat/completions"
-        
-        guard let url = URL(string: cleanURLString) else {
-            throw AIError.invalidURL
-        }
-        
-        let requestPayload = ChatCompletionRequest(
-            model: modelName,
-            messages: [
-                .init(role: "system", content: action.systemPrompt),
-                .init(role: "user", content: finalPrompt)
-            ],
-            n: 1,
-            stream: onChunk != nil ? true : nil
-        )
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        let cleanApiKey = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !cleanApiKey.isEmpty {
-            request.setValue("Bearer \(cleanApiKey)", forHTTPHeaderField: "Authorization")
-        }
-        
-        do {
-            let encoder = JSONEncoder()
-            request.httpBody = try encoder.encode(requestPayload)
-        } catch {
-            throw AIError.invalidResponse
-        }
-        
-        if onChunk != nil {
-            let (bytes, response) = try await URLSession.shared.bytes(for: request)
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw AIError.invalidResponse
-            }
-            
-            guard (200...299).contains(httpResponse.statusCode) else {
-                throw AIError.apiError(httpResponse.statusCode, "Streaming failed with HTTP status \(httpResponse.statusCode)")
-            }
-            
-            var fullResponseText = ""
-            
-            struct StreamChoice: Codable {
-                struct Delta: Codable {
-                    let content: String?
-                }
-                let delta: Delta
-            }
-            struct StreamResponse: Codable {
-                let choices: [StreamChoice]
-            }
-            
-            for try await line in bytes.lines {
-                let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
-                guard !trimmed.isEmpty else { continue }
-                
-                if trimmed == "data: [DONE]" {
-                    break
-                }
-                
-                if trimmed.hasPrefix("data: ") {
-                    let jsonString = String(trimmed.dropFirst(6))
-                    if let jsonData = jsonString.data(using: .utf8),
-                       let decoded = try? JSONDecoder().decode(StreamResponse.self, from: jsonData),
-                       let chunk = decoded.choices.first?.delta.content {
-                        fullResponseText += chunk
-                        onChunk?(chunk)
-                    }
-                }
-            }
-            
-            let cleaned = cleanThinkingProcess(fullResponseText, finalPrompt: finalPrompt)
-            return cleaned
-        } else {
-            let data: Data
-            let response: URLResponse
-            do {
-                (data, response) = try await URLSession.shared.data(for: request)
-            } catch {
-                throw AIError.networkError(error)
-            }
-            
-            if let httpResponse = response as? HTTPURLResponse {
-                guard (200...299).contains(httpResponse.statusCode) else {
-                    let errorDetails = String(data: data, encoding: .utf8) ?? "No details available."
-                    throw AIError.apiError(httpResponse.statusCode, errorDetails)
-                }
-            }
-            
-            let decoder = JSONDecoder()
-            let chatResponse = try decoder.decode(ChatCompletionResponse.self, from: data)
-            
-            guard let assistantMessage = chatResponse.choices.first?.message.content else {
-                throw AIError.emptyChoice
-            }
-            
-            let cleanedMessage = cleanThinkingProcess(assistantMessage, finalPrompt: finalPrompt)
-            return cleanedMessage
-        }
+        let provider = providerClient(for: config.providerId)
+        let text = try await provider.complete(config: config, action: action, finalPrompt: finalPrompt, onChunk: onChunk)
+        return cleanThinkingProcess(text, finalPrompt: finalPrompt)
     }
-    
+
     /// Strips thinking blocks (e.g., <think>...</think> or unclosed <think> blocks)
     /// and dynamically cleans out duplicate echoed prompt templates returned by local agentic LLMs.
     private func cleanThinkingProcess(_ text: String, finalPrompt: String) -> String {
         var cleaned = text
-        
-        // 1. Remove complete <think>...</think> blocks including their contents (DeepSeek-R1 reasoning)
+
         if let regex = try? NSRegularExpression(pattern: "<think>[\\s\\S]*?</think>", options: []) {
             let range = NSRange(cleaned.startIndex..<cleaned.endIndex, in: cleaned)
             cleaned = regex.stringByReplacingMatches(in: cleaned, options: [], range: range, withTemplate: "")
         }
-        
-        // 2. Remove complete <thought>...</thought> blocks (Alternative reasoning tags)
+
         if let regex = try? NSRegularExpression(pattern: "<thought>[\\s\\S]*?</thought>", options: []) {
             let range = NSRange(cleaned.startIndex..<cleaned.endIndex, in: cleaned)
             cleaned = regex.stringByReplacingMatches(in: cleaned, options: [], range: range, withTemplate: "")
         }
-        
-        // 3. Fallback: If there is an unclosed <think> or <thought> tag (due to cutoff), strip everything after it
+
         if let openThinkRange = cleaned.range(of: "<think>") {
             cleaned = String(cleaned[..<openThinkRange.lowerBound])
         }
         if let openThoughtRange = cleaned.range(of: "<thought>") {
             cleaned = String(cleaned[..<openThoughtRange.lowerBound])
         }
-        
-        // 4. Dynamic completion echo / agent loop separator cleanser.
-        // Strips repeated prompt headers without hardcoding any specific keywords.
-        // It dynamically uses the first non-empty line of the sent prompt as the delimiter.
+
         let promptLines = finalPrompt.components(separatedBy: .newlines)
         if let firstSignificantLine = promptLines.first(where: { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) {
             let separator = firstSignificantLine.trimmingCharacters(in: .whitespacesAndNewlines)
-            
-            // Check that the separator is significant and long enough
+
             if !separator.isEmpty && separator.count > 3 {
                 let parts = cleaned.components(separatedBy: separator)
                 if parts.count > 2 {
                     var lastValidSegment = ""
-                    // Iterate in reverse to find the final completed agent turn response block
                     for part in parts.reversed() {
                         let trimmedPart = part.trimmingCharacters(in: .whitespacesAndNewlines)
-                        
-                        // Ensure the segment is not empty and is not just an uncompleted prompt placeholder template
+
                         if !trimmedPart.isEmpty && !trimmedPart.contains("[") && !trimmedPart.contains("]") {
                             lastValidSegment = separator + "\n" + part
                             break
@@ -256,165 +133,465 @@ public final class AIService: Sendable {
                 }
             }
         }
-        
-        // 5. Trim whitespaces and newlines
+
         return cleaned.trimmingCharacters(in: .whitespacesAndNewlines)
     }
-    
-    /// Verifies the API connection by hitting <baseURL>/models.
-    /// Enforces a 5-second timeout and decodes available models on success.
-    public func verifyConnection(baseURL: String, apiKey: String) async throws -> String {
-        var cleanURLString = baseURL.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !cleanURLString.hasSuffix("/") {
-            cleanURLString += "/"
-        }
-        cleanURLString += "models"
-        
-        guard let url = URL(string: cleanURLString) else {
-            throw AIError.invalidURL
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.timeoutInterval = 5.0
-        
-        let cleanApiKey = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !cleanApiKey.isEmpty {
-            request.setValue("Bearer \(cleanApiKey)", forHTTPHeaderField: "Authorization")
-        }
-        
-        let data: Data
-        let response: URLResponse
-        do {
-            let config = URLSessionConfiguration.ephemeral
-            config.timeoutIntervalForRequest = 5.0
-            config.timeoutIntervalForResource = 5.0
-            let session = URLSession(configuration: config)
-            (data, response) = try await session.data(for: request)
-        } catch {
-            throw AIError.networkError(error)
-        }
-        
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw AIError.invalidResponse
-        }
-        
-        let statusCode = httpResponse.statusCode
-        if statusCode != 200 {
-            if statusCode == 401 || statusCode == 403 {
-                throw AIError.apiError(statusCode, "Unauthorized (Invalid API Key)")
-            } else if statusCode == 404 {
-                // Endpoint responded but path not found (typical for some custom local servers)
-                return "Connected (Server reached)"
-            } else {
-                let msg = String(data: data, encoding: .utf8)?.prefix(50) ?? "Server Error"
-                throw AIError.apiError(statusCode, String(msg))
-            }
-        }
-        
-        // Parse models if returned
-        struct ModelInfo: Codable {
-            let id: String
-        }
-        struct ModelList: Codable {
-            let data: [ModelInfo]
-        }
-        
-        if let list = try? JSONDecoder().decode(ModelList.self, from: data), !list.data.isEmpty {
-            let count = list.data.count
-            let example = list.data[0].id
-            return "Connected (\(count) models: e.g. \(example))"
-        }
-        
-        return "Connected (Online)"
+
+    /// Verifies the API connection using the selected provider strategy.
+    public func verifyConnection(
+        baseURL: String,
+        apiKey: String,
+        providerId: String = APIProvider.openAICompatible.id
+    ) async throws -> String {
+        try await providerClient(for: providerId).verifyConnection(baseURL: baseURL, apiKey: apiKey)
     }
-    
-    /// Fetches the list of model IDs available from the server dynamically.
-    /// Supports standard OpenAI/v1/models and Ollama's direct /api/tags endpoints.
-    public func fetchAvailableModels(baseURL: String, apiKey: String) async -> [String] {
-        var cleanURLString = baseURL.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !cleanURLString.hasSuffix("/") {
-            cleanURLString += "/"
+
+    /// Fetches the list of model IDs available from the selected provider.
+    public func fetchAvailableModels(
+        baseURL: String,
+        apiKey: String,
+        providerId: String = APIProvider.openAICompatible.id
+    ) async -> [String] {
+        await providerClient(for: providerId).fetchAvailableModels(baseURL: baseURL, apiKey: apiKey)
+    }
+
+    private func providerClient(for providerId: String) -> AIProviderClient {
+        switch APIProvider.normalizedId(providerId) {
+        case APIProvider.ollama.id:
+            return OllamaProviderClient()
+        case APIProvider.anthropic.id:
+            return AnthropicProviderClient()
+        case APIProvider.deepSeek.id:
+            return OpenAICompatibleProviderClient(defaultBaseURL: APIProvider.deepSeek.defaultBaseURL)
+        default:
+            return OpenAICompatibleProviderClient(defaultBaseURL: APIProvider.openAICompatible.defaultBaseURL)
         }
-        
-        let config = URLSessionConfiguration.ephemeral
-        config.timeoutIntervalForRequest = 4.0
-        let session = URLSession(configuration: config)
-        
-        // 1. Try standard OpenAI /models endpoint
-        if let openaiURL = URL(string: cleanURLString + "models") {
-            var request = URLRequest(url: openaiURL)
-            request.httpMethod = "GET"
-            request.timeoutInterval = 4.0
-            
-            let cleanApiKey = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !cleanApiKey.isEmpty {
-                request.setValue("Bearer \(cleanApiKey)", forHTTPHeaderField: "Authorization")
-            }
-            
-            if let (data, response) = try? await session.data(for: request),
-               let httpResponse = response as? HTTPURLResponse,
-               httpResponse.statusCode == 200 {
-                
-                struct ModelInfo: Codable {
-                    let id: String
-                }
-                struct ModelList: Codable {
-                    let data: [ModelInfo]
-                }
-                
-                if let list = try? JSONDecoder().decode(ModelList.self, from: data) {
-                    let ids = list.data.map { $0.id }
-                    if !ids.isEmpty {
-                        return ids.sorted()
-                    }
-                }
-            }
-        }
-        
-        // 2. Try Ollama direct /api/tags endpoint
-        var ollamaBase = cleanURLString
-        if ollamaBase.hasSuffix("v1/") {
-            ollamaBase = ollamaBase.replacingOccurrences(of: "v1/", with: "")
-        }
-        
-        if let ollamaURL = URL(string: ollamaBase + "api/tags") {
-            var request = URLRequest(url: ollamaURL)
-            request.httpMethod = "GET"
-            request.timeoutInterval = 4.0
-            
-            if let (data, response) = try? await session.data(for: request),
-               let httpResponse = response as? HTTPURLResponse,
-               httpResponse.statusCode == 200 {
-                
-                struct OllamaModel: Codable {
-                    let name: String
-                }
-                struct OllamaList: Codable {
-                    let models: [OllamaModel]
-                }
-                
-                if let list = try? JSONDecoder().decode(OllamaList.self, from: data) {
-                    let names = list.models.map { $0.name }
-                    if !names.isEmpty {
-                        return names.sorted()
-                    }
-                }
-            }
-        }
-        
-        return []
     }
 }
 
-// MARK: - OpenAI JSON Request & Response Encodable Structs
+private protocol AIProviderClient: Sendable {
+    func complete(
+        config: APIConfig,
+        action: PromptAction,
+        finalPrompt: String,
+        onChunk: (@Sendable (String) -> Void)?
+    ) async throws -> String
+
+    func verifyConnection(baseURL: String, apiKey: String) async throws -> String
+    func fetchAvailableModels(baseURL: String, apiKey: String) async -> [String]
+}
+
+private struct ProviderHTTP {
+    static func url(baseURL: String, defaultBaseURL: String, path: String) throws -> URL {
+        var base = baseURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        if base.isEmpty {
+            base = defaultBaseURL
+        }
+        while base.hasSuffix("/") {
+            base.removeLast()
+        }
+        guard let url = URL(string: "\(base)/\(path)") else {
+            throw AIError.invalidURL
+        }
+        return url
+    }
+
+    static func request(url: URL, apiKey: String, authorizationHeader: String = "Authorization") -> URLRequest {
+        var request = URLRequest(url: url)
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let cleanApiKey = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !cleanApiKey.isEmpty else {
+            return request
+        }
+
+        if authorizationHeader == "Authorization" {
+            request.setValue("Bearer \(cleanApiKey)", forHTTPHeaderField: authorizationHeader)
+        } else {
+            request.setValue(cleanApiKey, forHTTPHeaderField: authorizationHeader)
+        }
+
+        return request
+    }
+
+    static func data(for request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw AIError.invalidResponse
+            }
+            return (data, httpResponse)
+        } catch let error as AIError {
+            throw error
+        } catch {
+            throw AIError.networkError(error)
+        }
+    }
+
+    static func bytes(for request: URLRequest) async throws -> (URLSession.AsyncBytes, HTTPURLResponse) {
+        do {
+            let (bytes, response) = try await URLSession.shared.bytes(for: request)
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw AIError.invalidResponse
+            }
+            return (bytes, httpResponse)
+        } catch let error as AIError {
+            throw error
+        } catch {
+            throw AIError.networkError(error)
+        }
+    }
+
+    static func validate(_ response: HTTPURLResponse, data: Data? = nil) throws {
+        guard (200...299).contains(response.statusCode) else {
+            let details = data.flatMap { String(data: $0, encoding: .utf8) } ?? "HTTP status \(response.statusCode)"
+            throw AIError.apiError(response.statusCode, details)
+        }
+    }
+
+    static func connectedMessage(from ids: [String]) -> String {
+        guard let example = ids.first else {
+            return "Connected (Online)"
+        }
+        return "Connected (\(ids.count) models: e.g. \(example))"
+    }
+}
+
+private struct OpenAICompatibleProviderClient: AIProviderClient {
+    let defaultBaseURL: String
+
+    func complete(
+        config: APIConfig,
+        action: PromptAction,
+        finalPrompt: String,
+        onChunk: (@Sendable (String) -> Void)?
+    ) async throws -> String {
+        var request = ProviderHTTP.request(
+            url: try ProviderHTTP.url(baseURL: config.apiBaseURL, defaultBaseURL: defaultBaseURL, path: "chat/completions"),
+            apiKey: config.apiKey
+        )
+        request.httpMethod = "POST"
+        request.httpBody = try JSONEncoder().encode(ChatCompletionRequest(
+            model: config.modelName,
+            messages: [
+                .init(role: "system", content: action.systemPrompt),
+                .init(role: "user", content: finalPrompt)
+            ],
+            n: 1,
+            stream: onChunk != nil ? true : nil
+        ))
+
+        if let onChunk {
+            return try await streamCompletion(request: request, onChunk: onChunk)
+        }
+
+        let (data, response) = try await ProviderHTTP.data(for: request)
+        try ProviderHTTP.validate(response, data: data)
+        let chatResponse = try JSONDecoder().decode(ChatCompletionResponse.self, from: data)
+
+        guard let assistantMessage = chatResponse.choices.first?.message.content else {
+            throw AIError.emptyChoice
+        }
+
+        return assistantMessage
+    }
+
+    func verifyConnection(baseURL: String, apiKey: String) async throws -> String {
+        var request = ProviderHTTP.request(
+            url: try ProviderHTTP.url(baseURL: baseURL, defaultBaseURL: defaultBaseURL, path: "models"),
+            apiKey: apiKey
+        )
+        request.httpMethod = "GET"
+        request.timeoutInterval = 5.0
+
+        let (data, response) = try await ProviderHTTP.data(for: request)
+        if response.statusCode == 404 {
+            return "Connected (Server reached)"
+        }
+        try ProviderHTTP.validate(response, data: data)
+        return ProviderHTTP.connectedMessage(from: decodeOpenAIModels(data))
+    }
+
+    func fetchAvailableModels(baseURL: String, apiKey: String) async -> [String] {
+        guard let url = try? ProviderHTTP.url(baseURL: baseURL, defaultBaseURL: defaultBaseURL, path: "models") else {
+            return []
+        }
+        var request = ProviderHTTP.request(url: url, apiKey: apiKey)
+        request.httpMethod = "GET"
+        request.timeoutInterval = 4.0
+
+        guard let (data, response) = try? await ProviderHTTP.data(for: request), response.statusCode == 200 else {
+            return []
+        }
+        return decodeOpenAIModels(data)
+    }
+
+    private func streamCompletion(request: URLRequest, onChunk: @Sendable (String) -> Void) async throws -> String {
+        let (bytes, response) = try await ProviderHTTP.bytes(for: request)
+        try ProviderHTTP.validate(response)
+
+        var fullResponseText = ""
+        for try await line in bytes.lines {
+            let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty else { continue }
+
+            if trimmed == "data: [DONE]" {
+                break
+            }
+
+            guard trimmed.hasPrefix("data: ") else { continue }
+
+            let jsonString = String(trimmed.dropFirst(6))
+            guard let jsonData = jsonString.data(using: .utf8),
+                  let decoded = try? JSONDecoder().decode(StreamResponse.self, from: jsonData),
+                  let chunk = decoded.choices.first?.delta.content else {
+                continue
+            }
+
+            fullResponseText += chunk
+            onChunk(chunk)
+        }
+
+        return fullResponseText
+    }
+
+    private func decodeOpenAIModels(_ data: Data) -> [String] {
+        guard let list = try? JSONDecoder().decode(ModelList.self, from: data) else {
+            return []
+        }
+        return list.data.map(\.id).sorted()
+    }
+}
+
+private struct OllamaProviderClient: AIProviderClient {
+    func complete(
+        config: APIConfig,
+        action: PromptAction,
+        finalPrompt: String,
+        onChunk: (@Sendable (String) -> Void)?
+    ) async throws -> String {
+        var request = ProviderHTTP.request(
+            url: try ProviderHTTP.url(baseURL: nativeBaseURL(config.apiBaseURL), defaultBaseURL: APIProvider.ollama.defaultBaseURL, path: "api/chat"),
+            apiKey: config.apiKey
+        )
+        request.httpMethod = "POST"
+        request.httpBody = try JSONEncoder().encode(OllamaChatRequest(
+            model: config.modelName,
+            messages: [
+                .init(role: "system", content: action.systemPrompt),
+                .init(role: "user", content: finalPrompt)
+            ],
+            stream: onChunk != nil
+        ))
+
+        if let onChunk {
+            return try await streamCompletion(request: request, onChunk: onChunk)
+        }
+
+        let (data, response) = try await ProviderHTTP.data(for: request)
+        try ProviderHTTP.validate(response, data: data)
+        let decoded = try JSONDecoder().decode(OllamaChatResponse.self, from: data)
+        guard let content = decoded.message?.content, !content.isEmpty else {
+            throw AIError.emptyChoice
+        }
+        return content
+    }
+
+    func verifyConnection(baseURL: String, apiKey: String) async throws -> String {
+        var request = ProviderHTTP.request(
+            url: try ProviderHTTP.url(baseURL: nativeBaseURL(baseURL), defaultBaseURL: APIProvider.ollama.defaultBaseURL, path: "api/tags"),
+            apiKey: apiKey
+        )
+        request.httpMethod = "GET"
+        request.timeoutInterval = 5.0
+
+        let (data, response) = try await ProviderHTTP.data(for: request)
+        try ProviderHTTP.validate(response, data: data)
+        return ProviderHTTP.connectedMessage(from: decodeModels(data))
+    }
+
+    func fetchAvailableModels(baseURL: String, apiKey: String) async -> [String] {
+        guard let url = try? ProviderHTTP.url(baseURL: nativeBaseURL(baseURL), defaultBaseURL: APIProvider.ollama.defaultBaseURL, path: "api/tags") else {
+            return []
+        }
+        var request = ProviderHTTP.request(url: url, apiKey: apiKey)
+        request.httpMethod = "GET"
+        request.timeoutInterval = 4.0
+
+        guard let (data, response) = try? await ProviderHTTP.data(for: request), response.statusCode == 200 else {
+            return []
+        }
+        return decodeModels(data)
+    }
+
+    private func nativeBaseURL(_ baseURL: String) -> String {
+        var base = baseURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        if base.hasSuffix("/v1") {
+            base.removeLast(3)
+        } else if base.hasSuffix("/v1/") {
+            base.removeLast(4)
+        }
+        return base
+    }
+
+    private func streamCompletion(request: URLRequest, onChunk: @Sendable (String) -> Void) async throws -> String {
+        let (bytes, response) = try await ProviderHTTP.bytes(for: request)
+        try ProviderHTTP.validate(response)
+
+        var fullResponseText = ""
+        for try await line in bytes.lines {
+            let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty,
+                  let data = trimmed.data(using: .utf8),
+                  let decoded = try? JSONDecoder().decode(OllamaChatResponse.self, from: data) else {
+                continue
+            }
+
+            if let chunk = decoded.message?.content, !chunk.isEmpty {
+                fullResponseText += chunk
+                onChunk(chunk)
+            }
+
+            if decoded.done == true {
+                break
+            }
+        }
+
+        return fullResponseText
+    }
+
+    private func decodeModels(_ data: Data) -> [String] {
+        guard let list = try? JSONDecoder().decode(OllamaModelList.self, from: data) else {
+            return []
+        }
+        return list.models.map(\.name).sorted()
+    }
+}
+
+private struct AnthropicProviderClient: AIProviderClient {
+    private let version = "2023-06-01"
+    private let fallbackModels = [
+        "claude-3-5-sonnet-latest",
+        "claude-3-5-haiku-latest",
+        "claude-3-opus-latest",
+        "claude-3-sonnet-20240229",
+        "claude-3-haiku-20240307"
+    ]
+
+    func complete(
+        config: APIConfig,
+        action: PromptAction,
+        finalPrompt: String,
+        onChunk: (@Sendable (String) -> Void)?
+    ) async throws -> String {
+        var request = ProviderHTTP.request(
+            url: try ProviderHTTP.url(baseURL: config.apiBaseURL, defaultBaseURL: APIProvider.anthropic.defaultBaseURL, path: "messages"),
+            apiKey: config.apiKey,
+            authorizationHeader: "x-api-key"
+        )
+        request.httpMethod = "POST"
+        request.setValue(version, forHTTPHeaderField: "anthropic-version")
+        request.httpBody = try JSONEncoder().encode(AnthropicMessageRequest(
+            model: config.modelName,
+            system: action.systemPrompt,
+            messages: [.init(role: "user", content: finalPrompt)],
+            maxTokens: 4096,
+            stream: onChunk != nil
+        ))
+
+        if let onChunk {
+            return try await streamCompletion(request: request, onChunk: onChunk)
+        }
+
+        let (data, response) = try await ProviderHTTP.data(for: request)
+        try ProviderHTTP.validate(response, data: data)
+        let decoded = try JSONDecoder().decode(AnthropicMessageResponse.self, from: data)
+        let text = decoded.content.compactMap(\.text).joined()
+        guard !text.isEmpty else {
+            throw AIError.emptyChoice
+        }
+        return text
+    }
+
+    func verifyConnection(baseURL: String, apiKey: String) async throws -> String {
+        var request = ProviderHTTP.request(
+            url: try ProviderHTTP.url(baseURL: baseURL, defaultBaseURL: APIProvider.anthropic.defaultBaseURL, path: "models"),
+            apiKey: apiKey,
+            authorizationHeader: "x-api-key"
+        )
+        request.httpMethod = "GET"
+        request.timeoutInterval = 5.0
+        request.setValue(version, forHTTPHeaderField: "anthropic-version")
+
+        let (data, response) = try await ProviderHTTP.data(for: request)
+        if response.statusCode == 404 {
+            return ProviderHTTP.connectedMessage(from: fallbackModels)
+        }
+        try ProviderHTTP.validate(response, data: data)
+        let models = decodeModels(data)
+        return ProviderHTTP.connectedMessage(from: models.isEmpty ? fallbackModels : models)
+    }
+
+    func fetchAvailableModels(baseURL: String, apiKey: String) async -> [String] {
+        guard let url = try? ProviderHTTP.url(baseURL: baseURL, defaultBaseURL: APIProvider.anthropic.defaultBaseURL, path: "models") else {
+            return fallbackModels
+        }
+        var request = ProviderHTTP.request(url: url, apiKey: apiKey, authorizationHeader: "x-api-key")
+        request.httpMethod = "GET"
+        request.timeoutInterval = 4.0
+        request.setValue(version, forHTTPHeaderField: "anthropic-version")
+
+        guard let (data, response) = try? await ProviderHTTP.data(for: request), response.statusCode == 200 else {
+            return fallbackModels
+        }
+        let models = decodeModels(data)
+        return models.isEmpty ? fallbackModels : models
+    }
+
+    private func streamCompletion(request: URLRequest, onChunk: @Sendable (String) -> Void) async throws -> String {
+        let (bytes, response) = try await ProviderHTTP.bytes(for: request)
+        try ProviderHTTP.validate(response)
+
+        var fullResponseText = ""
+        for try await line in bytes.lines {
+            let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard trimmed.hasPrefix("data: ") else { continue }
+
+            let jsonString = String(trimmed.dropFirst(6))
+            guard let data = jsonString.data(using: .utf8),
+                  let decoded = try? JSONDecoder().decode(AnthropicStreamResponse.self, from: data) else {
+                continue
+            }
+
+            if decoded.type == "message_stop" {
+                break
+            }
+
+            guard let chunk = decoded.delta?.text, !chunk.isEmpty else {
+                continue
+            }
+
+            fullResponseText += chunk
+            onChunk(chunk)
+        }
+
+        return fullResponseText
+    }
+
+    private func decodeModels(_ data: Data) -> [String] {
+        guard let list = try? JSONDecoder().decode(ModelList.self, from: data) else {
+            return []
+        }
+        return list.data.map(\.id).sorted()
+    }
+}
 
 private struct ChatCompletionRequest: Codable {
     struct Message: Codable {
         let role: String
         let content: String
     }
-    
+
     let model: String
     let messages: [Message]
     let n: Int?
@@ -424,11 +601,96 @@ private struct ChatCompletionRequest: Codable {
 private struct ChatCompletionResponse: Codable {
     struct Choice: Codable {
         struct Message: Codable {
-            let role: String
+            let role: String?
             let content: String
         }
         let message: Message
     }
-    
+
     let choices: [Choice]
+}
+
+private struct StreamResponse: Codable {
+    struct Choice: Codable {
+        struct Delta: Codable {
+            let content: String?
+        }
+        let delta: Delta
+    }
+    let choices: [Choice]
+}
+
+private struct ModelList: Codable {
+    struct ModelInfo: Codable {
+        let id: String
+    }
+    let data: [ModelInfo]
+}
+
+private struct OllamaChatRequest: Codable {
+    struct Message: Codable {
+        let role: String
+        let content: String
+    }
+
+    let model: String
+    let messages: [Message]
+    let stream: Bool
+}
+
+private struct OllamaChatResponse: Codable {
+    struct Message: Codable {
+        let content: String
+    }
+
+    let message: Message?
+    let done: Bool?
+}
+
+private struct OllamaModelList: Codable {
+    struct Model: Codable {
+        let name: String
+    }
+
+    let models: [Model]
+}
+
+private struct AnthropicMessageRequest: Codable {
+    struct Message: Codable {
+        let role: String
+        let content: String
+    }
+
+    let model: String
+    let system: String
+    let messages: [Message]
+    let maxTokens: Int
+    let stream: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case model
+        case system
+        case messages
+        case maxTokens = "max_tokens"
+        case stream
+    }
+}
+
+private struct AnthropicMessageResponse: Codable {
+    struct ContentBlock: Codable {
+        let type: String?
+        let text: String?
+    }
+
+    let content: [ContentBlock]
+}
+
+private struct AnthropicStreamResponse: Codable {
+    struct Delta: Codable {
+        let type: String?
+        let text: String?
+    }
+
+    let type: String
+    let delta: Delta?
 }

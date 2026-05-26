@@ -18,6 +18,7 @@ Designed for developers, writers, and power users who want friction-free AI inte
 - **🎨 Accent Customization & HUD Themes**: Re-color selection rings, progress HUDs, and popover buttons using vibrant HSL-tailored colors (Blue, Emerald, Amber, Graphite, and Purple). Segmented support for System/Light/Dark OSD styles.
 - **📂 SQLite-Backed History**: Local SQLite database storing your complete input/output transformation history. Fully searchable in real time with quick-copy, delete, and purge controls.
 - **🔒 ssh-Grade Keychain Security**: Saves sensitive API credentials inside Apple’s native Keychain Services with automatic background UserDefaults migration.
+- **🧩 Provider-Aware AI Routing**: Choose OpenAI-compatible APIs, native Ollama, Anthropic, or DeepSeek per profile, each with provider-specific request and streaming support.
 - **🛠️ Automated API Failovers**: Attach secondary backup profiles to any API profile. If your primary Ollama or OpenAI server goes offline, the request automatically redirects to your fallback route.
 - **🔊 Premium Sound Feedback**: Native sound cues utilizing macOS AppKit `NSSound` alerts. Plays `"Purr"` on capture, `"Glass"` on completion, and `"Basso"` on failovers or errors.
 - **🔍 Smart Selection Growth**: If you press a hotkey with an empty selection, a built-in macro automatically grows the text cursor to capture the active paragraph before running.
