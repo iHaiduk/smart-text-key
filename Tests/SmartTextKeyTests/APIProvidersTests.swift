@@ -355,13 +355,17 @@ struct APIProvidersTests {
         let hud = MockHUDPresenter()
         let history = MockHistoryStore()
         let reporter = MockErrorReporter()
+        let soundPlayer = MockSoundPlayer()
+        let statusIndicator = MockStatusIndicator()
         
         let pipeline = TransformationPipeline(
             clipboardClient: clipboard,
             aiClient: ai,
             hudPresenter: hud,
             historyStore: history,
-            errorReporter: reporter
+            errorReporter: reporter,
+            soundPlayer: soundPlayer,
+            statusIndicator: statusIndicator
         )
         
         let snippet = PromptAction(

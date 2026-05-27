@@ -289,7 +289,7 @@ final class MockStatusIndicator: StatusIndicatorProtocol {
     }
 }
 
-@Suite("Text Transformation Pipeline Tests")
+@Suite("Text Transformation Pipeline Tests", .serialized)
 @MainActor
 struct TransformationPipelineTests {
     

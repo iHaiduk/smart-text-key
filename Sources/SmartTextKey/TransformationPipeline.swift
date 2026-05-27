@@ -173,9 +173,9 @@ public final class TransformationPipeline {
     private func waitForModifiersRelease() async -> Bool {
         let startTime = Date()
         while Date().timeIntervalSince(startTime) < 1.0 {
-            let activeModifierFlags = NSEvent.modifierFlags
+            let activeModifierFlags = currentModifierFlags()
             let modifierMask: NSEvent.ModifierFlags = [.command, .option, .control, .shift]
-            if activeModifierFlags.intersection(modifierMask).isEmpty {
+            if activeModifierFlags.isDisjoint(with: modifierMask) {
                 break
             }
 
@@ -209,7 +209,7 @@ public final class TransformationPipeline {
 
         let dateString = DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .short)
         let clipboardText = NSPasteboard.general.string(forType: .string) ?? ""
-        let frontmostApplication = sourceApplication ?? NSWorkspace.shared.frontmostApplication
+        let frontmostApplication = currentFrontmostApplication(fallback: sourceApplication)
         let applicationName = frontmostApplication?.localizedName ?? "Active App"
 
         var textToPaste = action.template
@@ -263,10 +263,42 @@ public final class TransformationPipeline {
     ) -> PipelineContext {
         PipelineContext(
             sourceApplication: sourceApplication,
-            activeScreen: NSScreen.screenWithMouse,
-            mouseLocation: NSEvent.mouseLocation,
+            activeScreen: currentScreenWithMouse(),
+            mouseLocation: currentMouseLocation(),
             originalClipboardText: originalClipboardText
         )
+    }
+
+    private func currentModifierFlags() -> NSEvent.ModifierFlags {
+        guard NSApp != nil else {
+            return []
+        }
+
+        return NSEvent.modifierFlags
+    }
+
+    private func currentFrontmostApplication(fallback: NSRunningApplication?) -> NSRunningApplication? {
+        guard NSApp != nil else {
+            return fallback
+        }
+
+        return fallback ?? NSWorkspace.shared.frontmostApplication
+    }
+
+    private func currentScreenWithMouse() -> NSScreen? {
+        guard NSApp != nil else {
+            return nil
+        }
+
+        return NSScreen.screenWithMouse
+    }
+
+    private func currentMouseLocation() -> NSPoint {
+        guard NSApp != nil else {
+            return .zero
+        }
+
+        return NSEvent.mouseLocation
     }
 
     private func resolveModelName(for action: PromptAction) -> String {
