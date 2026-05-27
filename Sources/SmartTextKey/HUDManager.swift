@@ -294,7 +294,7 @@ public final class HUDManager: HUDPresenterProtocol {
             }
         )
         
-        let panel = makePanel(contentView: overlayView, width: 450, height: 260, screen: nil)
+        let panel = makePanel(contentView: overlayView, width: 520, height: 340, screen: nil)
         self.fixModePanel = panel
         showPanel(panel)
     }

@@ -43,7 +43,7 @@ struct FixModeInputOverlayView: View {
                         .padding(10)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .frame(height: 75)
+                .frame(height: 110)
                 .background(Color(NSColor.textBackgroundColor).opacity(0.3))
                 .cornerRadius(6)
                 .overlay(
@@ -88,7 +88,7 @@ struct FixModeInputOverlayView: View {
                             return .ignored
                         }
                 }
-                .frame(height: 70)
+                .frame(minHeight: 110)
                 .background(Color(NSColor.textBackgroundColor).opacity(0.15))
                 .cornerRadius(6)
                 .overlay(
@@ -129,7 +129,7 @@ struct FixModeInputOverlayView: View {
             }
         }
         .padding(16)
-        .frame(width: 450, height: 260)
+        .frame(width: 520, height: 340)
         .background(VisualEffectView(material: .hudWindow, blendingMode: .behindWindow))
         .onAppear {
             isInstructionFocused = true
