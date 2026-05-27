@@ -50,6 +50,23 @@ final class SafeChunkCollector: @unchecked Sendable {
     }
 }
 
+final class RecordedRequestStore: @unchecked Sendable {
+    private let lock = NSLock()
+    private var recordedRequest: URLRequest?
+
+    func set(_ request: URLRequest) {
+        lock.lock()
+        defer { lock.unlock() }
+        recordedRequest = request
+    }
+
+    func get() -> URLRequest? {
+        lock.lock()
+        defer { lock.unlock() }
+        return recordedRequest
+    }
+}
+
 // MARK: - Suite Setup
 
 @Suite("API Providers Integration Tests", .serialized)
@@ -83,18 +100,20 @@ struct APIProvidersTests {
             ]
         }
         """
+        let recordedRequest = RecordedRequestStore()
         
         MockURLProtocol.requestHandler = { request in
-            #expect(request.url?.absoluteString == "https://api.openai.com/v1/chat/completions")
-            #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer sk-test-key")
-            #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
-            #expect(request.httpMethod == "POST")
-            
+            recordedRequest.set(request)
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
             return (response, expectedResponse.data(using: .utf8))
         }
         
         let result = try await client.complete(config: config, action: action, finalPrompt: "Translate this", onChunk: nil)
+        let request = try #require(recordedRequest.get())
+        #expect(request.url?.absoluteString == "https://api.openai.com/v1/chat/completions")
+        #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer sk-test-key")
+        #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
+        #expect(request.httpMethod == "POST")
         #expect(result == "Hello from OpenAI Mock!")
     }
     
@@ -137,14 +156,17 @@ struct APIProvidersTests {
             ]
         }
         """
+        let recordedRequest = RecordedRequestStore()
         
         MockURLProtocol.requestHandler = { request in
-            #expect(request.url?.absoluteString == "https://api.openai.com/v1/models")
+            recordedRequest.set(request)
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
             return (response, modelsPayload.data(using: .utf8))
         }
         
         let models = await client.fetchAvailableModels(baseURL: "", apiKey: "sk-test-key")
+        let request = try #require(recordedRequest.get())
+        #expect(request.url?.absoluteString == "https://api.openai.com/v1/models")
         #expect(models == ["gpt-3.5-turbo", "gpt-4", "gpt-4o"])
     }
 
@@ -165,16 +187,18 @@ struct APIProvidersTests {
             "done": true
         }
         """
+        let recordedRequest = RecordedRequestStore()
         
         MockURLProtocol.requestHandler = { request in
-            #expect(request.url?.absoluteString == "http://127.0.0.1:11434/api/chat")
-            #expect(request.httpMethod == "POST")
-            
+            recordedRequest.set(request)
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
             return (response, expectedResponse.data(using: .utf8))
         }
         
         let result = try await client.complete(config: config, action: action, finalPrompt: "Tell me", onChunk: nil)
+        let request = try #require(recordedRequest.get())
+        #expect(request.url?.absoluteString == "http://127.0.0.1:11434/api/chat")
+        #expect(request.httpMethod == "POST")
         #expect(result == "Hello from Ollama Mock!")
     }
 
@@ -221,18 +245,20 @@ struct APIProvidersTests {
             ]
         }
         """
+        let recordedRequest = RecordedRequestStore()
         
         MockURLProtocol.requestHandler = { request in
-            #expect(request.url?.absoluteString == "https://api.anthropic.com/v1/messages")
-            #expect(request.value(forHTTPHeaderField: "x-api-key") == "ant-test-key")
-            #expect(request.value(forHTTPHeaderField: "anthropic-version") == "2023-06-01")
-            #expect(request.httpMethod == "POST")
-            
+            recordedRequest.set(request)
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
             return (response, expectedResponse.data(using: .utf8))
         }
         
         let result = try await client.complete(config: config, action: action, finalPrompt: "Rewrite this", onChunk: nil)
+        let request = try #require(recordedRequest.get())
+        #expect(request.url?.absoluteString == "https://api.anthropic.com/v1/messages")
+        #expect(request.value(forHTTPHeaderField: "x-api-key") == "ant-test-key")
+        #expect(request.value(forHTTPHeaderField: "anthropic-version") == "2023-06-01")
+        #expect(request.httpMethod == "POST")
         #expect(result == "Hello from Claude Mock!")
     }
 
