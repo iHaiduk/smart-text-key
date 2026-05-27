@@ -3,7 +3,7 @@ import Foundation
 import AppKit
 @testable import SmartTextKey
 
-@Suite("SQLite History Database Tests")
+@Suite("SQLite History Database Tests", .serialized)
 @MainActor
 struct HistoryDatabaseTests {
     
@@ -64,7 +64,7 @@ struct HistoryDatabaseTests {
     }
 }
 
-@Suite("Keychain Security Tests")
+@Suite("Keychain Security Tests", .serialized)
 struct KeychainTests {
     
     @Test("Test saving, reading, and deleting secure keys from macOS Keychain")
@@ -93,7 +93,7 @@ struct KeychainTests {
     }
 }
 
-@Suite("Prompt Action Response Suffix Tests")
+@Suite("Prompt Action Response Suffix Tests", .serialized)
 struct PromptActionTests {
     @Test("Test prompt action response suffix is correctly stored and accessed")
     func testResponseSuffixStoring() async throws {
