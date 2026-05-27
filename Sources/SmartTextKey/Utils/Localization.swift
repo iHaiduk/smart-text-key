@@ -6,6 +6,9 @@ import Foundation
 /// Falls back gracefully: specific language → English → raw key.
 public struct Localization: Sendable {
     public static let shared = Localization()
+    private static let resourceBundleName = "SmartTextKey_SmartTextKey.bundle"
+
+    private final class BundleLocator {}
 
     // MARK: - Cached bundles
 
@@ -17,12 +20,12 @@ public struct Localization: Sendable {
         let supportedCodes = ["en", "ru", "uk", "zh", "vi",
                               "es", "fr", "de", "it", "pt",
                               "ja", "ko", "ar", "hi"]
+        let resourceBundle = Self.resolveResourceBundle()
 
         for code in supportedCodes {
-            // Bundle.module points to the SPM resource bundle at runtime.
-            if let url = Bundle.module.url(forResource: "Localizable",
-                                           withExtension: "strings",
-                                           subdirectory: "\(code).lproj"),
+            if let url = resourceBundle?.url(forResource: "Localizable",
+                                             withExtension: "strings",
+                                             subdirectory: "\(code).lproj"),
                let bundle = Bundle(url: url.deletingLastPathComponent()) {
                 cache[code] = bundle
             }
@@ -51,5 +54,27 @@ public struct Localization: Sendable {
 
         // 3. Return the key itself as last resort
         return key
+    }
+
+    private static func resolveResourceBundle() -> Bundle? {
+        let candidateBundles = [Bundle.main, Bundle(for: BundleLocator.self)]
+        let candidateBaseURLs = candidateBundles.flatMap { bundle in
+            [
+                bundle.resourceURL,
+                bundle.bundleURL,
+                bundle.bundleURL.deletingLastPathComponent(),
+                bundle.executableURL?.deletingLastPathComponent()
+            ]
+            .compactMap { $0 }
+        }
+
+        for baseURL in candidateBaseURLs {
+            let bundleURL = baseURL.appendingPathComponent(resourceBundleName)
+            if let bundle = Bundle(url: bundleURL) {
+                return bundle
+            }
+        }
+
+        return nil
     }
 }
