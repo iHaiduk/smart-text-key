@@ -1,0 +1,126 @@
+/* Smart Text Key — Russian Localizable Strings */
+
+/* Sidebar / Navigation */
+"general_settings_title" = "Общие настройки";
+"api_settings_title" = "Настройки API";
+"history_title" = "История";
+"global_section" = "ГЛОБАЛЬНЫЕ";
+"ai_actions_section" = "ДЕЙСТВИЯ AI";
+
+/* Buttons */
+"add_action_button" = "Добавить действие";
+"delete_button" = "Удалить";
+"cancel_button" = "Отмена";
+"apply_fix_button" = "Применить";
+"add_profile_button" = "Добавить профиль";
+"test_connection_button" = "Проверить соединение";
+"clear_all_button" = "Очистить всё";
+
+/* General Settings */
+"show_preview_popover" = "Показывать предпросмотр";
+"show_preview_popover_desc" = "Позволяет проверять, редактировать или копировать ответ AI во всплывающем окне перед заменой выделенного текста. Если отключено, текст заменяется мгновенно.";
+"accent_color" = "Цвет акцента";
+"accent_color_desc" = "Динамическое изменение выделения интерфейса, активных границ и кнопок.";
+"hud_theme" = "Тема HUD OSD";
+"hud_theme_desc" = "Выберите тему оформления для системных HUD и плавающих панелей.";
+"sound_effects" = "Включить звуковые эффекты";
+"sound_effects_desc" = "Воспроизведение мягких звуков при запуске, успехе и ошибках конвейера.";
+"launch_at_login" = "Запуск при старте системы";
+"launch_at_login_desc" = "Автоматически запускать Smart Text Key в строке меню при загрузке вашего Mac.";
+"snippets_search_hotkey" = "Быстрая вставка сниппетов";
+"snippets_search_hotkey_desc" = "Глобальная горячая клавиша для вызова HUD-поиска по сниппетам с навигацией стрелками.";
+"fix_mode_hotkey" = "Интерактивное исправление";
+"fix_mode_hotkey_desc" = "Глобальная горячая клавиша для захвата выделения и отображения текстового поля ввода команд.";
+"target_language" = "Язык приложения";
+"target_language_desc" = "Выберите активный язык для интерфейса приложения и дефолтных трансформаций AI.";
+
+/* Sections */
+"behavior_section" = "ПОВЕДЕНИЕ";
+"interface_section" = "ИНТЕРФЕЙС И СТИЛЬ";
+"system_preferences_section" = "СИСТЕМНЫЕ НАСТРОЙКИ";
+"hotkeys_section" = "ГЛОБАЛЬНЫЕ ГОРЯЧИЕ КЛАВИШИ";
+
+/* Theme Options */
+"theme_system" = "Системная";
+"theme_light" = "Светлая";
+"theme_dark" = "Темная";
+"system_language_default" = "Системный язык (По умолчанию)";
+
+/* Action Editor */
+"new_action_title" = "Новое действие";
+"untitled_action" = "Безымянное действие";
+"edit_action_title" = "Редактировать действие";
+"action_title_label" = "Название действия";
+"action_title_placeholder" = "например: Рефакторинг, Перевод на русский";
+"action_title_desc" = "Название, отображаемое в оверлеях HUD и списках (например, «Саммари», «Исправление грамматики»).";
+"is_snippet_label" = "Это текстовый сниппет";
+"is_snippet_desc" = "Включить текстовые сниппеты. При включении шаблон расширяется мгновенно и вставляет локальный текст (поддерживает {{CLIPBOARD}} или {{DATE}}) без запросов к AI.";
+"app_binding_label" = "Привязка к приложению (Опционально)";
+"app_binding_desc" = "Привязать это действие к запущенному приложению. При нажатии горячей клавиши конвейер проверит активное приложение и запустит привязанное действие, иначе сработает глобальное.";
+"api_profile_label" = "Конфигурационный профиль API";
+"api_profile_desc" = "Выберите профиль API, отвечающий за обработку этого действия. Можно наследовать активный глобальный профиль.";
+"global_shortcut_label" = "Глобальное сочетание клавиш";
+"global_shortcut_desc" = "Нажмите сочетание клавиш, чтобы назначить уникальный системный шорткат. Отпускание клавиш запустит обработку.";
+"system_prompt_label" = "Системный промт";
+"system_prompt_desc" = "Персонаж AI, контекст и правила выполнения (например, «Действуй как профессиональный редактор»).";
+"user_prompt_template_label" = "Шаблон промта пользователя";
+"snippet_content_label" = "Содержимое текстового сниппета";
+"prompt_template_desc_ai" = "Шаблон промта, содержащий {{TEXT}} (выделенный блок текста), опциональные теги {{CLIPBOARD}} и {{LANGUAGE}} (целевой язык).";
+"prompt_template_desc_snippet" = "Шаблон статического текста для мгновенной вставки. Поддерживает плейсхолдеры {{CLIPBOARD}}, {{DATE}} и {{CURRENT_APP}}.";
+"response_suffix_label" = "Суффикс ответа (Опционально)";
+"response_suffix_desc" = "Необязательный суффикс, динамически добавляемый в конец ответа AI перед заменой (например, цитирование).";
+"press_keys_to_record" = "Нажмите клавиши для записи.";
+"must_include_text_supports_lang" = "Должно содержать {{TEXT}} (поддерживает {{LANGUAGE}})";
+"supports_clipboard_date_app" = "Поддерживает {{CLIPBOARD}}, {{DATE}}, {{CURRENT_APP}}";
+"appends_text_literally" = "Добавляет текст в конец сгенерированного AI ответа";
+"action_not_found" = "Действие не найдено";
+"global_application" = "Глобально (Любое приложение)";
+"inherit_global_active_profile" = "Наследовать глобальный профиль (%@)";
+
+/* API Settings */
+"api_config_title" = "Профили конфигурации API";
+"api_config_desc" = "Создавайте и настраивайте конечные точки для выполнения AI-преобразований.";
+"profile_name_placeholder" = "Имя профиля";
+"profile_name_desc" = "Пользовательское имя для идентификации профиля при выборе его в Действиях.";
+"api_provider_label" = "Провайдер API";
+"api_provider_desc" = "Выберите платформу искусственного интеллекта (например, OpenAI, Anthropic, Ollama, DeepSeek).";
+"api_base_url_label" = "Базовый URL API";
+"api_base_url_desc" = "Целевой URL-адрес для API. Локальные провайдеры обычно используют http://localhost:11434/v1.";
+"api_key_label" = "Ключ API";
+"api_key_desc" = "Секретный токен авторизации. Безопасно сохраняется в Keychain macOS. Для локальных сервисов можно оставить пустым.";
+"model_name_label" = "Имя модели";
+"model_name_desc" = "Конкретная версия модели для работы (например, gpt-4o, claude-3-5-sonnet). Ищите или выбирайте динамически.";
+"fallback_profile_label" = "Резервный профиль API";
+"fallback_profile_desc" = "Если запрос к этому профилю завершится ошибкой, система мгновенно переключится на резервный профиль для выполнения действия без прерываний.";
+"connecting_label" = "Соединение...";
+"new_profile_title" = "Новый профиль";
+"profile_copy_suffix" = "Копия";
+"clone_profile_help" = "Клонировать профиль";
+"delete_profile_help" = "Удалить профиль";
+"none_label" = "Нет";
+
+/* Snippets Search Overlay */
+"search_snippets_placeholder" = "Поиск сниппетов...";
+"no_snippets_found" = "Сниппеты не найдены";
+"navigate_label" = "Навигация";
+"paste_label" = "Вставить";
+
+/* History */
+"history_desc" = "Просматривайте, копируйте или удаляйте прошлые трансформации текста";
+"clear_all_confirm" = "Вы уверены, что хотите очистить всю историю?";
+"clear_all_warn" = "Это безвозвратно удалит все записи прошлых трансформаций текста. Это действие нельзя отменить.";
+"no_history_yet" = "История пуста";
+"no_matches_found" = "Совпадений не найдено";
+"no_history_desc" = "Трансформируйте текст с помощью ваших горячих клавиш, чтобы увидеть историю здесь.";
+"search_history_placeholder" = "Поиск по промту, исходному тексту или результату...";
+"copied" = "Скопировано";
+"original_text" = "Исходный текст";
+"transformed_output" = "Результат преобразования";
+
+/* Fix Mode Overlay */
+"fix_mode_title" = "Режим исправления текста";
+"fix_mode_captured" = "Захвачено %d симв.";
+"fix_mode_preview" = "ПРЕДПРОСМОТР ВЫДЕЛЕНИЯ:";
+"fix_mode_instruction" = "ИНСТРУКЦИЯ ДЛЯ AI:";
+"fix_mode_placeholder" = "например: переведи на английский, сделай лаконичнее, перепиши красиво...";
+"captured_chars" = "Захвачено %d симв.";

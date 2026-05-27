@@ -75,6 +75,8 @@ public final class HUDManager: HUDPresenterProtocol {
     
     private var hudPanel: NSPanel?
     private var popoverPanel: NSPanel?
+    private var snippetsPanel: NSPanel?
+    private var fixModePanel: NSPanel?
     
     private init() {}
     
@@ -86,6 +88,45 @@ public final class HUDManager: HUDPresenterProtocol {
             panel.appearance = NSAppearance(named: .aqua)
         } else {
             panel.appearance = nil // Inherit system standard
+        }
+    }
+    
+    private func makePanel<V: View>(contentView: V, width: CGFloat, height: CGFloat, screen: NSScreen?) -> NSPanel {
+        let targetScreen = screen ?? NSScreen.screenWithMouse ?? NSScreen.main ?? NSScreen.screens.first
+        guard let activeScreen = targetScreen else { return NSPanel() }
+        let screenFrame = activeScreen.visibleFrame
+        
+        let x = screenFrame.origin.x + (screenFrame.width - width) / 2
+        let y = screenFrame.origin.y + (screenFrame.height - height) / 2 + 100
+        
+        let hostingController = NSHostingController(rootView: contentView)
+        
+        let panel = InteractiveHUDPanel(
+            contentRect: NSRect(x: x, y: y, width: width, height: height),
+            styleMask: [.borderless],
+            backing: .buffered,
+            defer: false
+        )
+        
+        panel.contentViewController = hostingController
+        panel.isOpaque = false
+        panel.backgroundColor = .clear
+        panel.level = .statusBar
+        panel.collectionBehavior = [.canJoinAllSpaces, .ignoresCycle]
+        panel.hasShadow = true
+        applyHUDTheme(to: panel)
+        
+        return panel
+    }
+    
+    private func showPanel(_ panel: NSPanel) {
+        panel.alphaValue = 0
+        panel.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.15
+            panel.animator().alphaValue = 1.0
         }
     }
     
@@ -189,47 +230,9 @@ public final class HUDManager: HUDPresenterProtocol {
             }
         )
         
-        let hostingController = NSHostingController(rootView: popoverView)
-        
-        let popoverWidth: CGFloat = 480
-        let popoverHeight: CGFloat = 380
-        
-        let targetScreen = screen ?? NSScreen.screenWithMouse ?? NSScreen.main ?? NSScreen.screens.first
-        guard let activeScreen = targetScreen else { return }
-        let screenFrame = activeScreen.visibleFrame
-        
-        let x = screenFrame.origin.x + (screenFrame.width - popoverWidth) / 2
-        let y = screenFrame.origin.y + 48
-        
-        let panelFrame = NSRect(x: x, y: y, width: popoverWidth, height: popoverHeight)
-        
-        let panel = InteractiveHUDPanel(
-            contentRect: panelFrame,
-            styleMask: [.borderless],
-            backing: .buffered,
-            defer: false
-        )
-        
-        panel.contentViewController = hostingController
-        panel.isOpaque = false
-        panel.backgroundColor = .clear
-        panel.level = .statusBar
-        panel.collectionBehavior = [.canJoinAllSpaces, .ignoresCycle]
-        panel.hasShadow = true
-        applyHUDTheme(to: panel)
-        
+        let panel = makePanel(contentView: popoverView, width: 480, height: 380, screen: screen)
         self.popoverPanel = panel
-        
-        panel.alphaValue = 0
-        panel.makeKeyAndOrderFront(nil)
-        
-        // Force the panel to capture keyboard events immediately
-        NSApp.activate(ignoringOtherApps: true)
-        
-        NSAnimationContext.runAnimationGroup { context in
-            context.duration = 0.15
-            panel.animator().alphaValue = 1.0
-        }
+        showPanel(panel)
     }
     
     /// Hides and destroys the Popover HUD with a smooth fade-out.
@@ -249,6 +252,57 @@ public final class HUDManager: HUDPresenterProtocol {
         } else {
             panel.orderOut(nil)
         }
+    }
+    
+    public func showSnippetsSearch(snippets: [PromptAction], onSelect: @escaping @MainActor (PromptAction) -> Void) {
+        dismissSnippetsSearch()
+        
+        let overlayView = SnippetsSearchOverlayView(
+            snippets: snippets,
+            onSelect: { [weak self] snippet in
+                self?.dismissSnippetsSearch()
+                onSelect(snippet)
+            },
+            onCancel: { [weak self] in
+                self?.dismissSnippetsSearch()
+            }
+        )
+        
+        let panel = makePanel(contentView: overlayView, width: 450, height: 350, screen: nil)
+        self.snippetsPanel = panel
+        showPanel(panel)
+    }
+    
+    public func dismissSnippetsSearch() {
+        guard let panel = snippetsPanel else { return }
+        self.snippetsPanel = nil
+        panel.orderOut(nil)
+    }
+    
+    public func showFixModeInput(capturedText: String, onConfirm: @escaping @MainActor (String) -> Void, onCancel: @escaping @MainActor () -> Void) {
+        dismissFixModeInput()
+        
+        let overlayView = FixModeInputOverlayView(
+            capturedText: capturedText,
+            onConfirm: { [weak self] instruction in
+                self?.dismissFixModeInput()
+                onConfirm(instruction)
+            },
+            onCancel: { [weak self] in
+                self?.dismissFixModeInput()
+                onCancel()
+            }
+        )
+        
+        let panel = makePanel(contentView: overlayView, width: 450, height: 260, screen: nil)
+        self.fixModePanel = panel
+        showPanel(panel)
+    }
+    
+    public func dismissFixModeInput() {
+        guard let panel = fixModePanel else { return }
+        self.fixModePanel = nil
+        panel.orderOut(nil)
     }
 }
 

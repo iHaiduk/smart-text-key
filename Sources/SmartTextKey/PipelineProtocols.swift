@@ -9,6 +9,8 @@ public protocol ClipboardClientProtocol {
     func captureSelectedText() async -> (text: String, backup: [NSPasteboard.PasteboardType: Data], originalClipboardText: String)?
     func pasteResultText(_ text: String, originalBackup: [NSPasteboard.PasteboardType: Data], sourceApplication: NSRunningApplication?) async
     func restorePasteboard(_ backup: [NSPasteboard.PasteboardType: Data])
+    func backupPasteboard() -> [NSPasteboard.PasteboardType: Data]
+    func resetState()
 }
 
 @MainActor
@@ -35,6 +37,11 @@ public protocol HUDPresenterProtocol {
         onCancel: @escaping @MainActor () -> Void
     )
     func dismissPopover(animated: Bool)
+    
+    func showSnippetsSearch(snippets: [PromptAction], onSelect: @escaping @MainActor (PromptAction) -> Void)
+    func dismissSnippetsSearch()
+    func showFixModeInput(capturedText: String, onConfirm: @escaping @MainActor (String) -> Void, onCancel: @escaping @MainActor () -> Void)
+    func dismissFixModeInput()
 }
 
 @MainActor
@@ -61,4 +68,13 @@ public final class AlertErrorReporter: ErrorReporterProtocol {
         NSApp.activate(ignoringOtherApps: true)
         alert.runModal()
     }
+}
+
+public protocol SoundPlayerProtocol: Sendable {
+    func play(_ type: SoundManager.SoundType)
+}
+
+@MainActor
+public protocol StatusIndicatorProtocol {
+    func setLoading(_ isLoading: Bool)
 }

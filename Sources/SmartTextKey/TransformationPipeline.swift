@@ -65,10 +65,13 @@ public final class TransformationPipeline {
     private let hudPresenter: HUDPresenterProtocol
     private let historyStore: HistoryStoreProtocol
     private let errorReporter: ErrorReporterProtocol
+    private let soundPlayer: SoundPlayerProtocol
+    private let statusIndicator: StatusIndicatorProtocol
+    private let settings: AppSettings
     
     public private(set) var state: PipelineState = .idle {
         didSet {
-            print("Smart Text Key [Pipeline]: State changed to \(state)")
+            AppLogger.pipeline.log("State changed to \(self.state)")
         }
     }
     
@@ -77,20 +80,36 @@ public final class TransformationPipeline {
         aiClient: AIClientProtocol = AIService.shared,
         hudPresenter: HUDPresenterProtocol = HUDManager.shared,
         historyStore: HistoryStoreProtocol = HistoryManager.shared,
-        errorReporter: ErrorReporterProtocol = AlertErrorReporter.shared
+        errorReporter: ErrorReporterProtocol = AlertErrorReporter.shared,
+        soundPlayer: SoundPlayerProtocol = SoundManager.shared,
+        statusIndicator: StatusIndicatorProtocol = StatusBarController.shared,
+        settings: AppSettings = AppSettings.shared
     ) {
         self.clipboardClient = clipboardClient
         self.aiClient = aiClient
         self.hudPresenter = hudPresenter
         self.historyStore = historyStore
         self.errorReporter = errorReporter
+        self.soundPlayer = soundPlayer
+        self.statusIndicator = statusIndicator
+        self.settings = settings
     }
     
     /// Starts the pipeline orchestration for a given PromptAction.
-    public func run(action: PromptAction) async {
+    public func run(
+        action: PromptAction,
+        preCapturedText: String? = nil,
+        preCapturedBackup: [NSPasteboard.PasteboardType: Data]? = nil,
+        originalClipboardText: String? = nil,
+        sourceApplication: NSRunningApplication? = nil
+    ) async {
         guard state == .idle else {
-            print("Smart Text Key [Pipeline]: Pipeline is already running!")
+            AppLogger.pipeline.warning("Pipeline is already running!")
             return
+        }
+        
+        if preCapturedText == nil {
+            clipboardClient.resetState()
         }
         
         state = .waitingForModifiersRelease
@@ -123,19 +142,59 @@ public final class TransformationPipeline {
             return
         }
         
-        // Play start sound cue
-        SoundManager.shared.play(.start)
-        
-        state = .capturingText
-        
-        // 2. Capture selected text
-        guard let result = await clipboardClient.captureSelectedText() else {
+        if action.isSnippet {
+            let dateStr = DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .short)
+            let originalClipboard = NSPasteboard.general.string(forType: .string) ?? ""
+            let appName = (sourceApplication ?? NSWorkspace.shared.frontmostApplication)?.localizedName ?? "Active App"
+            
+            var textToPaste = action.template
+            textToPaste = textToPaste.replacingOccurrences(of: "{{CLIPBOARD}}", with: originalClipboard)
+            textToPaste = textToPaste.replacingOccurrences(of: "{{DATE}}", with: dateStr)
+            textToPaste = textToPaste.replacingOccurrences(of: "{{CURRENT_APP}}", with: appName)
+            
+            soundPlayer.play(.success)
+            let backup = clipboardClient.backupPasteboard()
+            let frontApp = sourceApplication ?? NSWorkspace.shared.frontmostApplication
+            
+            await clipboardClient.pasteResultText(textToPaste, originalBackup: backup, sourceApplication: frontApp)
+            
+            state = .completed(outputText: textToPaste, context: PipelineContext(sourceApplication: frontApp))
             state = .idle
             return
         }
         
+        // Play start sound cue
+        soundPlayer.play(.start)
+        
+        state = .capturingText
+        
+        struct CaptureResult {
+            let text: String
+            let backup: [NSPasteboard.PasteboardType: Data]
+            let originalClipboardText: String
+        }
+        
+        let result: CaptureResult
+        if let preCapturedText = preCapturedText, let preCapturedBackup = preCapturedBackup {
+            result = CaptureResult(
+                text: preCapturedText,
+                backup: preCapturedBackup,
+                originalClipboardText: originalClipboardText ?? ""
+            )
+        } else {
+            guard let capture = await clipboardClient.captureSelectedText() else {
+                state = .idle
+                return
+            }
+            result = CaptureResult(
+                text: capture.text,
+                backup: capture.backup,
+                originalClipboardText: capture.originalClipboardText
+            )
+        }
+        
         let context = PipelineContext(
-            sourceApplication: clipboardClient.sourceApplication,
+            sourceApplication: sourceApplication ?? clipboardClient.sourceApplication,
             activeScreen: NSScreen.screenWithMouse,
             mouseLocation: NSEvent.mouseLocation,
             originalClipboardText: result.originalClipboardText
@@ -149,10 +208,10 @@ public final class TransformationPipeline {
         }
         
         // 3. Prepare AI pipeline
-        StatusBarController.shared.setLoading(true)
+        statusIndicator.setLoading(true)
         StreamingState.shared.reset()
         
-        let apiSettings = AppSettings.shared
+        let apiSettings = settings
         let modelName: String
         if let boundId = action.apiConfigId,
            let boundConfig = apiSettings.apiConfigs.first(where: { $0.id == boundId }) {
@@ -179,7 +238,7 @@ public final class TransformationPipeline {
         
         var shouldCleanHUDAtEnd = true
         
-        if AppSettings.shared.showPreviewPopover {
+        if settings.showPreviewPopover {
             shouldCleanHUDAtEnd = false
             
             hudPresenter.showPopover(
@@ -218,140 +277,117 @@ public final class TransformationPipeline {
                 }
             )
             
-            do {
-                state = .streaming(capturedText: result.text, context: context)
-                
-                let response = try await aiClient.process(
-                    action: action,
-                    capturedText: result.text,
-                    originalClipboardText: context.originalClipboardText
-                ) { chunk in
-                    guard !Task.isCancelled else { return }
-                    Task { @MainActor in
-                        StreamingState.shared.text += chunk
-                        StreamingState.shared.tokenCount += 1
-                    }
+            await executeProcessing(
+                action: action,
+                capturedText: result.text,
+                backup: result.backup,
+                context: context,
+                modelName: modelName,
+                dismissUI: { [weak self] animated in
+                    self?.hudPresenter.dismissPopover(animated: animated)
+                },
+                onSuccess: { response in
+                    StreamingState.shared.text = response
                 }
-                
-                if Task.isCancelled {
-                    throw CancellationError()
-                }
-                
-                let cleanResponse = response.trimmingCharacters(in: .whitespacesAndNewlines)
-                guard !cleanResponse.isEmpty else {
-                    throw NSError(domain: "SmartTextKey", code: -1, userInfo: [NSLocalizedDescriptionKey: "AI returned an empty response. Text was not replaced."])
-                }
-                
-                StreamingState.shared.isStreaming = false
-                StreamingState.shared.text = response
-                
-                historyStore.logTransformation(
-                    promptTitle: action.title,
-                    inputText: result.text,
-                    outputText: response,
-                    modelName: modelName
-                )
-                
-                SoundManager.shared.play(.success)
-                state = .completed(outputText: response, context: context)
-                
-            } catch {
-                StreamingState.shared.isStreaming = false
-                
-                if error is CancellationError || Task.isCancelled {
-                    clipboardClient.restorePasteboard(result.backup)
-                    hudPresenter.dismissPopover(animated: false)
-                    StatusBarController.shared.setLoading(false)
-                    state = .cancelled(context: context)
-                    state = .idle
-                    return
-                }
-                
-                SoundManager.shared.play(.failure)
-                clipboardClient.restorePasteboard(result.backup)
-                hudPresenter.dismissPopover(animated: false)
-                StatusBarController.shared.setLoading(false)
-                
-                state = .error(error.localizedDescription, context: context)
-                errorReporter.reportError(
-                    title: "Action Execution Failed",
-                    message: "Could not execute action '\(action.title)'.\n\nReason: \(error.localizedDescription)"
-                )
-                state = .idle
-            }
+            )
         } else {
             // Non-popover mode: direct HUD paste
             hudPresenter.showHUD(actionTitle: action.title, modelName: modelName, screen: context.activeScreen)
             
-            do {
-                state = .streaming(capturedText: result.text, context: context)
-                
-                let response = try await aiClient.process(
-                    action: action,
-                    capturedText: result.text,
-                    originalClipboardText: context.originalClipboardText
-                ) { chunk in
-                    guard !Task.isCancelled else { return }
-                    Task { @MainActor in
-                        StreamingState.shared.text += chunk
-                        StreamingState.shared.tokenCount += 1
-                    }
+            await executeProcessing(
+                action: action,
+                capturedText: result.text,
+                backup: result.backup,
+                context: context,
+                modelName: modelName,
+                dismissUI: { [weak self] animated in
+                    self?.hudPresenter.dismissHUD(animated: animated)
+                },
+                onSuccess: { [weak self] response in
+                    guard let self = self else { return }
+                    await self.clipboardClient.pasteResultText(response, originalBackup: result.backup, sourceApplication: context.sourceApplication)
                 }
-                
-                if Task.isCancelled {
-                    throw CancellationError()
-                }
-                
-                let cleanResponse = response.trimmingCharacters(in: .whitespacesAndNewlines)
-                guard !cleanResponse.isEmpty else {
-                    throw NSError(domain: "SmartTextKey", code: -1, userInfo: [NSLocalizedDescriptionKey: "AI returned an empty response. Text was not replaced."])
-                }
-                
-                StreamingState.shared.isStreaming = false
-                
-                await clipboardClient.pasteResultText(response, originalBackup: result.backup, sourceApplication: context.sourceApplication)
-                
-                historyStore.logTransformation(
-                    promptTitle: action.title,
-                    inputText: result.text,
-                    outputText: response,
-                    modelName: modelName
-                )
-                
-                SoundManager.shared.play(.success)
-                state = .completed(outputText: response, context: context)
-                
-            } catch {
-                StreamingState.shared.isStreaming = false
-                
-                if error is CancellationError || Task.isCancelled {
-                    clipboardClient.restorePasteboard(result.backup)
-                    hudPresenter.dismissHUD(animated: false)
-                    StatusBarController.shared.setLoading(false)
-                    state = .cancelled(context: context)
-                    state = .idle
-                    return
-                }
-                
-                SoundManager.shared.play(.failure)
-                clipboardClient.restorePasteboard(result.backup)
-                hudPresenter.dismissHUD(animated: false)
-                StatusBarController.shared.setLoading(false)
-                
-                state = .error(error.localizedDescription, context: context)
-                errorReporter.reportError(
-                    title: "Action Execution Failed",
-                    message: "Could not execute action '\(action.title)'.\n\nReason: \(error.localizedDescription)"
-                )
-                state = .idle
-            }
+            )
         }
         
         if shouldCleanHUDAtEnd {
-            StatusBarController.shared.setLoading(false)
+            statusIndicator.setLoading(false)
             hudPresenter.dismissHUD(animated: true)
         }
         
         state = .idle
+    }
+
+    private func executeProcessing(
+        action: PromptAction,
+        capturedText: String,
+        backup: [NSPasteboard.PasteboardType: Data],
+        context: PipelineContext,
+        modelName: String,
+        dismissUI: @MainActor @escaping (Bool) -> Void,
+        onSuccess: @MainActor @escaping (String) async -> Void
+    ) async {
+        do {
+            state = .streaming(capturedText: capturedText, context: context)
+            
+            let response = try await aiClient.process(
+                action: action,
+                capturedText: capturedText,
+                originalClipboardText: context.originalClipboardText
+            ) { chunk in
+                guard !Task.isCancelled else { return }
+                Task { @MainActor in
+                    StreamingState.shared.text += chunk
+                    StreamingState.shared.tokenCount += 1
+                }
+            }
+            
+            if Task.isCancelled {
+                throw CancellationError()
+            }
+            
+            let cleanResponse = response.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !cleanResponse.isEmpty else {
+                throw NSError(domain: "SmartTextKey", code: -1, userInfo: [NSLocalizedDescriptionKey: "AI returned an empty response. Text was not replaced."])
+            }
+            
+            StreamingState.shared.isStreaming = false
+            
+            await onSuccess(response)
+            
+            historyStore.logTransformation(
+                promptTitle: action.title,
+                inputText: capturedText,
+                outputText: response,
+                modelName: modelName
+            )
+            
+            soundPlayer.play(.success)
+            state = .completed(outputText: response, context: context)
+            
+        } catch {
+            StreamingState.shared.isStreaming = false
+            
+            if error is CancellationError || Task.isCancelled {
+                clipboardClient.restorePasteboard(backup)
+                dismissUI(false)
+                statusIndicator.setLoading(false)
+                state = .cancelled(context: context)
+                state = .idle
+                return
+            }
+            
+            soundPlayer.play(.failure)
+            clipboardClient.restorePasteboard(backup)
+            dismissUI(false)
+            statusIndicator.setLoading(false)
+            
+            state = .error(error.localizedDescription, context: context)
+            errorReporter.reportError(
+                title: "Action Execution Failed",
+                message: "Could not execute action '\(action.title)'.\n\nReason: \(error.localizedDescription)"
+            )
+            state = .idle
+        }
     }
 }

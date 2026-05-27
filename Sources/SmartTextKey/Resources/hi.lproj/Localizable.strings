@@ -1,0 +1,124 @@
+/* General */
+"general_settings_title" = "सामान्य सेटिंग्स";
+"api_settings_title" = "API सेटिंग्स";
+"history_title" = "इतिहास";
+"global_section" = "वैश्विक";
+"ai_actions_section" = "AI क्रियाएँ";
+
+/* Buttons */
+"add_action_button" = "क्रिया जोड़ें";
+"delete_button" = "हटाएँ";
+"cancel_button" = "रद्द करें";
+"apply_fix_button" = "सुधार लागू करें";
+"add_profile_button" = "प्रोफ़ाइल जोड़ें";
+"test_connection_button" = "कनेक्शन परीक्षण";
+"clear_all_button" = "सब साफ़ करें";
+
+/* General Settings */
+"show_preview_popover" = "पूर्वावलोकन पॉपओवर दिखाएँ";
+"show_preview_popover_desc" = "चयनित टेक्स्ट को बदलने से पहले एक फ़्लोटिंग पॉपओवर में AI प्रतिक्रिया की समीक्षा करें, संपादित करें या कॉपी करें। अक्षम होने पर, टेक्स्ट तुरंत बदल दिया जाता है।";
+"accent_color" = "एक्सेंट रंग";
+"accent_color_desc" = "UI हाइलाइट, सक्रिय बॉर्डर और बटन को गतिशील रूप से बदलें।";
+"hud_theme" = "HUD OSD थीम";
+"hud_theme_desc" = "सिस्टम HUD और फ़्लोटिंग पैनल के लिए रंग मोड स्वरूप चुनें।";
+"sound_effects" = "ध्वनि प्रभाव सक्षम करें";
+"sound_effects_desc" = "पाइपलाइन प्रारंभ, सफलता और त्रुटि स्थितियों पर नरम ध्वनि प्रभाव चलाएँ।";
+"launch_at_login" = "लॉगिन पर लॉन्च करें";
+"launch_at_login_desc" = "Mac बूट होने पर मेनू बार में Smart Text Key को स्वचालित रूप से प्रारंभ करें।";
+"snippets_search_hotkey" = "स्निपेट त्वरित सम्मिलन";
+"snippets_search_hotkey_desc" = "एरो-की नेविगेशन और पेस्ट करने के लिए खोज HUD को सक्रिय करने का वैश्विक हॉटकी।";
+"fix_mode_hotkey" = "इंटरैक्टिव फिक्स मोड";
+"fix_mode_hotkey_desc" = "चयन कैप्चर करने और टाइप की गई निर्देश परत दिखाने का वैश्विक हॉटकी।";
+"target_language" = "ऐप भाषा";
+"target_language_desc" = "उपयोगकर्ता इंटरफ़ेस और डिफ़ॉल्ट AI रूपांतरणों के लिए उपयोग की जाने वाली सक्रिय भाषा चुनें।";
+
+/* Section Titles */
+"behavior_section" = "व्यवहार";
+"interface_section" = "इंटरफ़ेस और स्टाइलिंग";
+"system_preferences_section" = "सिस्टम प्राथमिकताएँ";
+"hotkeys_section" = "सिस्टम वैश्विक हॉटकी";
+
+/* Theme Options */
+"theme_system" = "सिस्टम";
+"theme_light" = "हल्का";
+"theme_dark" = "गहरा";
+"system_language_default" = "सिस्टम भाषा (डिफ़ॉल्ट)";
+
+/* Action Editor */
+"new_action_title" = "नई क्रिया";
+"untitled_action" = "बिना शीर्षक की क्रिया";
+"edit_action_title" = "क्रिया संपादित करें";
+"action_title_label" = "क्रिया शीर्षक";
+"action_title_placeholder" = "उदा. रिफ़ैक्टर, रूसी में अनुवाद करें";
+"action_title_desc" = "HUD ओवरले और सूचियों में दिखाया जाने वाला नाम (उदा. 'सारांश', 'व्याकरण ठीक करें')।";
+"is_snippet_label" = "टेक्स्ट स्निपेट है";
+"is_snippet_desc" = "स्थिर टेक्स्ट स्निपेट चालू करें। सक्षम होने पर, टेम्पलेट तुरंत विस्तृत होता है और कोई AI अनुरोध किए बिना स्थानीय स्थिर टेक्स्ट ({{CLIPBOARD}} या {{DATE}} का समर्थन) पेस्ट करता है।";
+"app_binding_label" = "एप्लिकेशन बाइंडिंग (वैकल्पिक)";
+"app_binding_desc" = "इस क्रिया को किसी चल रहे ऐप से बाइंड करें। हॉटकी दबाने पर, पाइपलाइन सबसे आगे के ऐप की जाँच करती है और बाउंड क्रिया चलाती है, कोई मेल न होने पर वैश्विक पर वापस आती है।";
+"api_profile_label" = "API कॉन्फ़िगरेशन प्रोफ़ाइल";
+"api_profile_desc" = "चुनें कि इस क्रिया को संसाधित करने के लिए कौन सा API एंडपॉइंट ज़िम्मेदार है। वैश्विक सक्रिय प्रोफ़ाइल को इनहेरिट कर सकता है।";
+"global_shortcut_label" = "वैश्विक शॉर्टकट";
+"global_shortcut_desc" = "सिस्टम-वाइड अनोखा शॉर्टकट असाइन करने के लिए कुंजियाँ दबाएँ। इन कुंजियों को छोड़ने से रूपांतरण ट्रिगर होता है।";
+"system_prompt_label" = "सिस्टम प्रॉम्प्ट";
+"system_prompt_desc" = "AI का व्यक्तित्व, संदर्भ और संचालन नियम (उदा. 'एक पेशेवर कॉपीएडिटर के रूप में कार्य करें')।";
+"user_prompt_template_label" = "उपयोगकर्ता प्रॉम्प्ट टेम्पलेट";
+"snippet_content_label" = "स्निपेट टेक्स्ट सामग्री";
+"prompt_template_desc_ai" = "{{TEXT}} (चयनित टेक्स्ट ब्लॉक), वैकल्पिक {{CLIPBOARD}} और {{LANGUAGE}} (गतिशील लक्ष्य भाषा) टैग वाला प्रॉम्प्ट टेम्पलेट।";
+"prompt_template_desc_snippet" = "तुरंत पेस्ट किया जाने वाला स्थिर टेक्स्ट टेम्पलेट। {{CLIPBOARD}}, {{DATE}}, और {{CURRENT_APP}} प्लेसहोल्डर का समर्थन करता है।";
+"response_suffix_label" = "प्रतिक्रिया प्रत्यय (वैकल्पिक)";
+"response_suffix_desc" = "प्रतिस्थापन से पहले AI आउटपुट के अंत में गतिशील रूप से जोड़ा जाने वाला वैकल्पिक टेक्स्ट।";
+"press_keys_to_record" = "रिकॉर्ड करने के लिए कुंजियाँ दबाएँ।";
+"must_include_text_supports_lang" = "{{TEXT}} शामिल होना चाहिए ({{LANGUAGE}} का समर्थन करता है)";
+"supports_clipboard_date_app" = "{{CLIPBOARD}}, {{DATE}}, {{CURRENT_APP}} का समर्थन करता है";
+"appends_text_literally" = "किसी भी उत्पन्न AI प्रतिक्रिया के अंत में टेक्स्ट को शाब्दिक रूप से जोड़ता है";
+"action_not_found" = "क्रिया नहीं मिली";
+"global_application" = "वैश्विक (कोई भी एप्लिकेशन)";
+"inherit_global_active_profile" = "वैश्विक सक्रिय प्रोफ़ाइल इनहेरिट करें (%@)";
+
+/* API Settings */
+"api_config_title" = "API कॉन्फ़िगरेशन प्रोफ़ाइल";
+"api_config_desc" = "AI रूपांतरणों को संसाधित करने के लिए एंडपॉइंट बनाएँ और कॉन्फ़िगर करें।";
+"profile_name_placeholder" = "प्रोफ़ाइल नाम";
+"profile_name_desc" = "विभिन्न क्रियाओं के लिए चुनते समय इस प्रोफ़ाइल को पहचानने के लिए एक कस्टम लेबल।";
+"api_provider_label" = "API प्रदाता";
+"api_provider_desc" = "कम्पलीशन संभालने के लिए AI सेवा प्लेटफ़ॉर्म (उदा. OpenAI, Anthropic, Ollama, DeepSeek) चुनें।";
+"api_base_url_label" = "API बेस URL";
+"api_base_url_desc" = "API के लिए लक्ष्य एंडपॉइंट URL। स्थानीय प्रदाता आमतौर पर http://localhost:11434/v1 उपयोग करते हैं।";
+"api_key_label" = "API कुंजी";
+"api_key_desc" = "अनुरोधों को प्रमाणित करने के लिए उपयोग किया जाने वाला गुप्त टोकन। macOS किचेन में सुरक्षित रूप से सहेजा गया।";
+"model_name_label" = "मॉडल नाम";
+"model_name_desc" = "चलाने के लिए विशिष्ट मॉडल संस्करण (उदा. gpt-4o, claude-3-5-sonnet)। गतिशील रूप से खोजें या चुनें।";
+"fallback_profile_label" = "फ़ॉलबैक API प्रोफ़ाइल";
+"fallback_profile_desc" = "यदि इस प्रोफ़ाइल से नेटवर्क अनुरोध या कनेक्शन विफल हो जाता है, तो पाइपलाइन तुरंत चयनित फ़ॉलबैक प्रोफ़ाइल पर स्विच कर देगी।";
+"connecting_label" = "कनेक्ट हो रहा है…";
+"new_profile_title" = "नई प्रोफ़ाइल";
+"profile_copy_suffix" = "की प्रति";
+"clone_profile_help" = "प्रोफ़ाइल क्लोन करें";
+"delete_profile_help" = "प्रोफ़ाइल हटाएँ";
+"none_label" = "कोई नहीं";
+
+/* Snippets HUD */
+"search_snippets_placeholder" = "स्निपेट खोजें…";
+"no_snippets_found" = "कोई स्निपेट नहीं मिला";
+"navigate_label" = "नेविगेट करें";
+"paste_label" = "पेस्ट करें";
+
+/* History */
+"history_desc" = "पिछले टेक्स्ट रूपांतरणों की समीक्षा करें, कॉपी करें या हटाएँ";
+"clear_all_confirm" = "क्या आप सभी रूपांतरण इतिहास साफ़ करना चाहते हैं?";
+"clear_all_warn" = "यह पिछले सभी टेक्स्ट रूपांतरणों के सभी रिकॉर्ड स्थायी रूप से हटा देगा। यह क्रिया पूर्ववत नहीं की जा सकती।";
+"no_history_yet" = "अभी तक कोई रूपांतरण नहीं";
+"no_matches_found" = "कोई मिलान नहीं मिला";
+"no_history_desc" = "यहाँ इतिहास देखने के लिए अपने गतिशील हॉटकी का उपयोग करके टेक्स्ट रूपांतरित करें।";
+"search_history_placeholder" = "प्रॉम्प्ट, इनपुट या आउटपुट द्वारा खोजें…";
+"copied" = "कॉपी हो गया";
+"original_text" = "मूल टेक्स्ट";
+"transformed_output" = "रूपांतरित आउटपुट";
+
+/* Fix Mode */
+"fix_mode_title" = "चयन सुधार मोड";
+"fix_mode_captured" = "%d अक्षर कैप्चर किए गए";
+"fix_mode_preview" = "चयन पूर्वावलोकन:";
+"fix_mode_instruction" = "निर्देश:";
+"fix_mode_placeholder" = "उदा. अंग्रेज़ी में अनुवाद करें, इसे संक्षिप्त करें, कार्यात्मक रिफ़ैक्टर…";
+"captured_chars" = "%d अक्षर कैप्चर किए गए";

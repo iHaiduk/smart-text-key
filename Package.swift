@@ -5,6 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "SmartTextKey",
+    defaultLocalization: "en",
     platforms: [
         .macOS(.v14)
     ],
@@ -22,6 +23,9 @@ let package = Package(
             name: "SmartTextKey",
             dependencies: [
                 .product(name: "KeyboardShortcuts", package: "KeyboardShortcuts")
+            ],
+            resources: [
+                .process("Resources")
             ]
         ),
         .testTarget(

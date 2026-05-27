@@ -1,0 +1,126 @@
+/* Smart Text Key — Chinese Simplified Localizable Strings */
+
+/* Sidebar / Navigation */
+"general_settings_title" = "通用设置";
+"api_settings_title" = "API 设置";
+"history_title" = "历史记录";
+"global_section" = "全局";
+"ai_actions_section" = "AI 动作";
+
+/* Buttons */
+"add_action_button" = "添加动作";
+"delete_button" = "删除";
+"cancel_button" = "取消";
+"apply_fix_button" = "应用修复";
+"add_profile_button" = "添加配置";
+"test_connection_button" = "测试连接";
+"clear_all_button" = "清空全部";
+
+/* General Settings */
+"show_preview_popover" = "显示预览弹窗";
+"show_preview_popover_desc" = "在替换所选文本之前，在悬浮弹窗中查看、编辑或复制 AI 回复。如果禁用，文本将立即被替换。";
+"accent_color" = "强调色";
+"accent_color_desc" = "动态更改界面高亮、活动边框和按钮颜色。";
+"hud_theme" = "HUD 界面主题";
+"hud_theme_desc" = "选择系统 HUD 和悬浮面板的颜色外观模式。";
+"sound_effects" = "启用音效";
+"sound_effects_desc" = "在管道启动、成功和错误状态下播放轻柔音效。";
+"launch_at_login" = "开机自启";
+"launch_at_login_desc" = "Mac 启动时自动在菜单栏启动 Smart Text Key。";
+"snippets_search_hotkey" = "快速插入片段";
+"snippets_search_hotkey_desc" = "全局热键，召回搜索 HUD 以进行方向键导航和粘贴。";
+"fix_mode_hotkey" = "交互式修复模式";
+"fix_mode_hotkey_desc" = "全局热键，捕获选择内容并显示输入的指令覆盖层。";
+"target_language" = "应用语言";
+"target_language_desc" = "选择用于用户界面和默认 AI 转换的活动语言。";
+
+/* Sections */
+"behavior_section" = "行为";
+"interface_section" = "界面与样式";
+"system_preferences_section" = "系统偏好设置";
+"hotkeys_section" = "系统全局热键";
+
+/* Theme Options */
+"theme_system" = "系统";
+"theme_light" = "浅色";
+"theme_dark" = "深色";
+"system_language_default" = "系统语言 (默认)";
+
+/* Action Editor */
+"new_action_title" = "新动作";
+"untitled_action" = "无标题动作";
+"edit_action_title" = "编辑动作";
+"action_title_label" = "动作标题";
+"action_title_placeholder" = "例如：重构，翻译成中文";
+"action_title_desc" = "在 HUD 覆盖层和列表中显示的名称（例如：'总结'、'修复语法'）。";
+"is_snippet_label" = "是否为文本片段";
+"is_snippet_desc" = "切换静态文本片段。启用时，模板将立即展开并粘贴本地静态文本（支持 {{CLIPBOARD}} 或 {{DATE}}），而不进行任何 AI 请求。";
+"app_binding_label" = "应用绑定（可选）";
+"app_binding_desc" = "将此动作绑定到特定的运行应用。当您按下热键时，管道会检查最前台的应用并运行绑定的动作，如果没有匹配项则回退到全局动作。";
+"api_profile_label" = "API 配置档案";
+"api_profile_desc" = "选择负责处理此动作的 API 端点。可以继承全局活动配置。";
+"global_shortcut_label" = "全局快捷键";
+"global_shortcut_desc" = "按下按键以分配唯一的系统快捷键。释放这些按键将触发转换。";
+"system_prompt_label" = "系统提示词 (System Prompt)";
+"system_prompt_desc" = "AI 的角色、上下文和操作规则（例如：'担任专业的文字编辑'）。";
+"user_prompt_template_label" = "用户提示词模板";
+"snippet_content_label" = "片段文本内容";
+"prompt_template_desc_ai" = "包含 {{TEXT}}（所选文本块）、可选 {{CLIPBOARD}} 和 {{LANGUAGE}}（动态目标语言）标签的提示词模板。";
+"prompt_template_desc_snippet" = "静态文本模板，立即粘贴。支持 {{CLIPBOARD}}、{{DATE}} 和 {{CURRENT_APP}} 占位符。";
+"response_suffix_label" = "回复后缀（可选）";
+"response_suffix_desc" = "在替换前动态附加到 AI 输出末尾的可选文本字面量（例如引用或空格）。";
+"press_keys_to_record" = "按下按键以录制。";
+"must_include_text_supports_lang" = "必须包含 {{TEXT}} (支持 {{LANGUAGE}})";
+"supports_clipboard_date_app" = "支持 {{CLIPBOARD}}, {{DATE}}, {{CURRENT_APP}}";
+"appends_text_literally" = "动态附加到生成的 AI 回复的末尾";
+"action_not_found" = "未找到动作";
+"global_application" = "全局 (任何应用程序)";
+"inherit_global_active_profile" = "继承全局活动配置 (%@)";
+
+/* API Settings */
+"api_config_title" = "API 配置档案";
+"api_config_desc" = "创建并配置端点以处理 AI 转换。";
+"profile_name_placeholder" = "档案名称";
+"profile_name_desc" = "为不同动作选择此配置时的自定义识别标签。";
+"api_provider_label" = "API 提供商";
+"api_provider_desc" = "选择 AI 服务平台（例如 OpenAI、Anthropic、Ollama、DeepSeek）来处理补全。";
+"api_base_url_label" = "API 基础 URL";
+"api_base_url_desc" = "API 的目标端点 URL。本地提供商通常使用 http://localhost:11434/v1。";
+"api_key_label" = "API 密钥";
+"api_key_desc" = "用于验证请求的安全令牌。安全地保存在 macOS Keychain 中。本地服务可留空。";
+"model_name_label" = "模型名称";
+"model_name_desc" = "要运行的具体模型版本（例如 gpt-4o、claude-3-5-sonnet）。动态搜索或选择。";
+"fallback_profile_label" = "后备 API 配置";
+"fallback_profile_desc" = "如果网络请求或与此配置的连接失败，管道将立即故障转移到所选的后备配置，以完成动作而不会中断。";
+"connecting_label" = "连接中...";
+"new_profile_title" = "新配置";
+"profile_copy_suffix" = "副本";
+"clone_profile_help" = "克隆配置";
+"delete_profile_help" = "删除配置";
+"none_label" = "无";
+
+/* Snippets Search Overlay */
+"search_snippets_placeholder" = "搜索片段...";
+"no_snippets_found" = "未找到片段";
+"navigate_label" = "导航";
+"paste_label" = "粘贴";
+
+/* History */
+"history_desc" = "查看、复制或删除过往的文本转换记录";
+"clear_all_confirm" = "您确定要清空所有转换历史记录吗？";
+"clear_all_warn" = "这将永久删除过往所有文本转换的记录。此操作无法撤销。";
+"no_history_yet" = "尚无转换记录";
+"no_matches_found" = "未找到匹配项";
+"no_history_desc" = "使用您的动态热键转换文本，即可在此处查看历史记录。";
+"search_history_placeholder" = "按提示词、输入或输出搜索...";
+"copied" = "已复制";
+"original_text" = "原文";
+"transformed_output" = "转换输出";
+
+/* Fix Mode Overlay */
+"fix_mode_title" = "选择修复模式";
+"fix_mode_captured" = "已捕获 %d 字符";
+"fix_mode_preview" = "选区预览：";
+"fix_mode_instruction" = "AI 指令：";
+"fix_mode_placeholder" = "例如：翻译成英文、写得更简练、重构为函数式...";
+"captured_chars" = "已捕获 %d 字符";

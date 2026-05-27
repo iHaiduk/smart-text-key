@@ -1,0 +1,124 @@
+/* General */
+"general_settings_title" = "一般設定";
+"api_settings_title" = "API設定";
+"history_title" = "履歴";
+"global_section" = "グローバル";
+"ai_actions_section" = "AIアクション";
+
+/* Buttons */
+"add_action_button" = "アクションを追加";
+"delete_button" = "削除";
+"cancel_button" = "キャンセル";
+"apply_fix_button" = "修正を適用";
+"add_profile_button" = "プロファイルを追加";
+"test_connection_button" = "接続をテスト";
+"clear_all_button" = "すべて消去";
+
+/* General Settings */
+"show_preview_popover" = "プレビューポップオーバーを表示";
+"show_preview_popover_desc" = "ハイライトしたテキストを置き換える前に、フローティングポップオーバーでAIの応答を確認、編集、またはコピーできます。無効にすると、テキストは即座に置き換えられます。";
+"accent_color" = "アクセントカラー";
+"accent_color_desc" = "UIのハイライト、アクティブな枠線、ボタンを動的に変更します。";
+"hud_theme" = "HUD OSDテーマ";
+"hud_theme_desc" = "システムHUDおよびフローティングパネルのカラーモードを選択します。";
+"sound_effects" = "サウンドエフェクトを有効にする";
+"sound_effects_desc" = "パイプラインの開始、成功、エラー時に穏やかなサウンドエフェクトを再生します。";
+"launch_at_login" = "ログイン時に起動";
+"launch_at_login_desc" = "Macの起動時にメニューバーでSmart Text Keyを自動的に開始します。";
+"snippets_search_hotkey" = "スニペットクイック挿入";
+"snippets_search_hotkey_desc" = "矢印キーによるナビゲーションと貼り付けのための検索HUDを呼び出すグローバルホットキー。";
+"fix_mode_hotkey" = "インタラクティブ修正モード";
+"fix_mode_hotkey_desc" = "選択範囲をキャプチャし、指示入力オーバーレイを表示するグローバルホットキー。";
+"target_language" = "アプリの言語";
+"target_language_desc" = "ユーザーインターフェースおよびデフォルトのAI変換に使用するアクティブな言語を選択します。";
+
+/* Section Titles */
+"behavior_section" = "動作";
+"interface_section" = "インターフェースとスタイル";
+"system_preferences_section" = "システム環境設定";
+"hotkeys_section" = "システムグローバルホットキー";
+
+/* Theme Options */
+"theme_system" = "システム";
+"theme_light" = "ライト";
+"theme_dark" = "ダーク";
+"system_language_default" = "システム言語（デフォルト）";
+
+/* Action Editor */
+"new_action_title" = "新規アクション";
+"untitled_action" = "無題のアクション";
+"edit_action_title" = "アクションを編集";
+"action_title_label" = "アクションタイトル";
+"action_title_placeholder" = "例：リファクタリング、ロシア語に翻訳";
+"action_title_desc" = "HUDオーバーレイおよびリストに表示される名前（例：「要約」、「文法修正」）。";
+"is_snippet_label" = "テキストスニペットとして使用";
+"is_snippet_desc" = "静的テキストスニペットを有効にします。有効にすると、テンプレートが即座に展開され、AIリクエストを行わずにローカルの静的テキスト（{{CLIPBOARD}}または{{DATE}}をサポート）を貼り付けます。";
+"app_binding_label" = "アプリケーションバインディング（オプション）";
+"app_binding_desc" = "このアクションを特定の実行中アプリにバインドします。ホットキーを押すと、パイプラインが最前面のアプリを確認し、バインドされたアクションを実行します。一致が見つからない場合はグローバルにフォールバックします。";
+"api_profile_label" = "API設定プロファイル";
+"api_profile_desc" = "このアクションの処理を担当するAPIエンドポイントを選択します。グローバルアクティブプロファイルを継承することができます。";
+"global_shortcut_label" = "グローバルショートカット";
+"global_shortcut_desc" = "キーを押してシステム全体で一意のショートカットを割り当てます。これらのキーを離すと変換がトリガーされます。";
+"system_prompt_label" = "システムプロンプト";
+"system_prompt_desc" = "AIのペルソナ、コンテキスト、および操作ルール（例：「プロのコピーエディターとして行動する」）。";
+"user_prompt_template_label" = "ユーザープロンプトテンプレート";
+"snippet_content_label" = "スニペットテキストコンテンツ";
+"prompt_template_desc_ai" = "{{TEXT}}（選択されたテキストブロック）、オプションの{{CLIPBOARD}}および{{LANGUAGE}}（動的ターゲット言語）タグを含むプロンプトテンプレート。";
+"prompt_template_desc_snippet" = "即座に貼り付けられる静的テキストテンプレート。{{CLIPBOARD}}、{{DATE}}、{{CURRENT_APP}}プレースホルダーをサポートします。";
+"response_suffix_label" = "レスポンスサフィックス（オプション）";
+"response_suffix_desc" = "置換前にAI出力の末尾に動的に追加されるオプションのテキストリテラル。";
+"press_keys_to_record" = "キーを押して記録します。";
+"must_include_text_supports_lang" = "{{TEXT}}を含める必要があります（{{LANGUAGE}}をサポート）";
+"supports_clipboard_date_app" = "{{CLIPBOARD}}、{{DATE}}、{{CURRENT_APP}}をサポート";
+"appends_text_literally" = "生成されたAI応答の末尾にテキストをそのまま追加します";
+"action_not_found" = "アクションが見つかりません";
+"global_application" = "グローバル（任意のアプリケーション）";
+"inherit_global_active_profile" = "グローバルアクティブプロファイルを継承（%@）";
+
+/* API Settings */
+"api_config_title" = "API設定プロファイル";
+"api_config_desc" = "AI変換を処理するエンドポイントを作成・設定します。";
+"profile_name_placeholder" = "プロファイル名";
+"profile_name_desc" = "異なるアクションに選択する際にこのプロファイルを識別するカスタムラベル。";
+"api_provider_label" = "APIプロバイダー";
+"api_provider_desc" = "補完処理を行うAIサービスプラットフォーム（例：OpenAI、Anthropic、Ollama、DeepSeek）を選択します。";
+"api_base_url_label" = "APIベースURL";
+"api_base_url_desc" = "APIのターゲットエンドポイントURL。ローカルプロバイダーは通常 http://localhost:11434/v1 を使用します。";
+"api_key_label" = "APIキー";
+"api_key_desc" = "リクエストの認証に使用するシークレットトークン。macOSキーチェーンに安全に保存されます。";
+"model_name_label" = "モデル名";
+"model_name_desc" = "実行するモデルの特定バージョン（例：gpt-4o、claude-3-5-sonnet）。動的に検索または選択します。";
+"fallback_profile_label" = "フォールバックAPIプロファイル";
+"fallback_profile_desc" = "このプロファイルへのネットワークリクエストまたは接続が失敗した場合、パイプラインは選択したフォールバックプロファイルに即座に切り替えます。";
+"connecting_label" = "接続中…";
+"new_profile_title" = "新規プロファイル";
+"profile_copy_suffix" = "のコピー";
+"clone_profile_help" = "プロファイルを複製";
+"delete_profile_help" = "プロファイルを削除";
+"none_label" = "なし";
+
+/* Snippets HUD */
+"search_snippets_placeholder" = "スニペットを検索…";
+"no_snippets_found" = "スニペットが見つかりません";
+"navigate_label" = "ナビゲート";
+"paste_label" = "貼り付け";
+
+/* History */
+"history_desc" = "過去のテキスト変換を確認、コピー、または削除";
+"clear_all_confirm" = "すべての変換履歴を消去してもよいですか？";
+"clear_all_warn" = "過去のすべてのテキスト変換記録が完全に削除されます。この操作は元に戻せません。";
+"no_history_yet" = "まだ変換がありません";
+"no_matches_found" = "一致するものが見つかりません";
+"no_history_desc" = "動的ホットキーを使ってテキストを変換すると、ここに履歴が表示されます。";
+"search_history_placeholder" = "プロンプト、入力、または出力で検索…";
+"copied" = "コピーしました";
+"original_text" = "元のテキスト";
+"transformed_output" = "変換後の出力";
+
+/* Fix Mode */
+"fix_mode_title" = "選択範囲修正モード";
+"fix_mode_captured" = "%d文字をキャプチャしました";
+"fix_mode_preview" = "選択プレビュー：";
+"fix_mode_instruction" = "指示：";
+"fix_mode_placeholder" = "例：英語に翻訳、簡潔にする、関数型にリファクタリング…";
+"captured_chars" = "%d文字をキャプチャしました";

@@ -15,13 +15,13 @@ public final class KeychainHelper: Sendable {
             directory = appSupport.appendingPathComponent("SmartTextKey")
         } else {
             directory = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("SmartTextKey")
-            print("Smart Text Key [Keychain]: Warning - Application Support directory not found, falling back to temporary directory.")
+            AppLogger.keychain.warning("Application Support directory not found, falling back to temporary directory.")
         }
         
         do {
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         } catch {
-            print("Smart Text Key [Keychain]: Error creating directory at \(directory.path): \(error)")
+            AppLogger.keychain.error("Error creating directory at \(directory.path): \(error)")
         }
         
         self.legacyStorageURL = directory.appendingPathComponent(".secure_keys.json")
@@ -100,7 +100,7 @@ public final class KeychainHelper: Sendable {
         }
 
         if updateStatus != errSecItemNotFound {
-            print("Smart Text Key [Keychain]: Failed to update key '\(key)': \(message(for: updateStatus))")
+            AppLogger.keychain.error("Failed to update key '\(key)': \(self.message(for: updateStatus))")
             return false
         }
 
@@ -113,7 +113,7 @@ public final class KeychainHelper: Sendable {
             return true
         }
 
-        print("Smart Text Key [Keychain]: Failed to save key '\(key)': \(message(for: addStatus))")
+        AppLogger.keychain.error("Failed to save key '\(key)': \(self.message(for: addStatus))")
         return false
     }
 
@@ -130,12 +130,12 @@ public final class KeychainHelper: Sendable {
         }
 
         guard status == errSecSuccess else {
-            print("Smart Text Key [Keychain]: Failed to read key '\(key)': \(message(for: status))")
+            AppLogger.keychain.error("Failed to read key '\(key)': \(self.message(for: status))")
             return nil
         }
 
         guard let data = item as? Data else {
-            print("Smart Text Key [Keychain]: Invalid data for key '\(key)'.")
+            AppLogger.keychain.error("Invalid data for key '\(key)'.")
             return nil
         }
 
@@ -149,7 +149,7 @@ public final class KeychainHelper: Sendable {
             return true
         }
 
-        print("Smart Text Key [Keychain]: Failed to delete key '\(key)': \(message(for: status))")
+        AppLogger.keychain.error("Failed to delete key '\(key)': \(self.message(for: status))")
         return false
     }
 
@@ -173,7 +173,7 @@ public final class KeychainHelper: Sendable {
             } catch CocoaError.fileNoSuchFile {
                 return true
             } catch {
-                print("Smart Text Key [Keychain]: Failed to remove legacy key storage: \(error)")
+                AppLogger.keychain.error("Failed to remove legacy key storage: \(error)")
                 return false
             }
         }
@@ -190,7 +190,7 @@ public final class KeychainHelper: Sendable {
             try FileManager.default.setAttributes(attributes, ofItemAtPath: path)
             return true
         } catch {
-            print("Smart Text Key [Keychain]: Failed to update legacy key storage: \(error)")
+            AppLogger.keychain.error("Failed to update legacy key storage: \(error)")
             return false
         }
     }

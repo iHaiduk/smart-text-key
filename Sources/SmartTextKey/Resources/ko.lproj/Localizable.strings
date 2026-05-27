@@ -1,0 +1,124 @@
+/* General */
+"general_settings_title" = "일반 설정";
+"api_settings_title" = "API 설정";
+"history_title" = "기록";
+"global_section" = "전역";
+"ai_actions_section" = "AI 작업";
+
+/* Buttons */
+"add_action_button" = "작업 추가";
+"delete_button" = "삭제";
+"cancel_button" = "취소";
+"apply_fix_button" = "수정 적용";
+"add_profile_button" = "프로필 추가";
+"test_connection_button" = "연결 테스트";
+"clear_all_button" = "모두 지우기";
+
+/* General Settings */
+"show_preview_popover" = "미리보기 팝오버 표시";
+"show_preview_popover_desc" = "강조된 텍스트가 교체되기 전에 부동 팝오버에서 AI 응답을 검토, 편집 또는 복사할 수 있습니다. 비활성화하면 텍스트가 즉시 교체됩니다.";
+"accent_color" = "강조 색상";
+"accent_color_desc" = "UI 강조 표시, 활성 테두리 및 버튼을 동적으로 변경합니다.";
+"hud_theme" = "HUD OSD 테마";
+"hud_theme_desc" = "시스템 HUD 및 부동 패널의 색상 모드를 선택합니다.";
+"sound_effects" = "사운드 효과 활성화";
+"sound_effects_desc" = "파이프라인 시작, 성공 및 오류 상태에서 부드러운 사운드 효과를 재생합니다.";
+"launch_at_login" = "로그인 시 실행";
+"launch_at_login_desc" = "Mac이 부팅될 때 메뉴 막대에서 Smart Text Key를 자동으로 시작합니다.";
+"snippets_search_hotkey" = "스니펫 빠른 삽입";
+"snippets_search_hotkey_desc" = "화살표 키 탐색 및 붙여넣기를 위한 검색 HUD를 호출하는 전역 단축키.";
+"fix_mode_hotkey" = "대화형 수정 모드";
+"fix_mode_hotkey_desc" = "선택 영역을 캡처하고 입력된 지침 오버레이를 표시하는 전역 단축키.";
+"target_language" = "앱 언어";
+"target_language_desc" = "사용자 인터페이스 및 기본 AI 변환에 사용되는 활성 언어를 선택합니다.";
+
+/* Section Titles */
+"behavior_section" = "동작";
+"interface_section" = "인터페이스 및 스타일";
+"system_preferences_section" = "시스템 환경설정";
+"hotkeys_section" = "시스템 전역 단축키";
+
+/* Theme Options */
+"theme_system" = "시스템";
+"theme_light" = "라이트";
+"theme_dark" = "다크";
+"system_language_default" = "시스템 언어 (기본값)";
+
+/* Action Editor */
+"new_action_title" = "새 작업";
+"untitled_action" = "제목 없는 작업";
+"edit_action_title" = "작업 편집";
+"action_title_label" = "작업 제목";
+"action_title_placeholder" = "예: 리팩터링, 러시아어로 번역";
+"action_title_desc" = "HUD 오버레이 및 목록에 표시되는 이름 (예: '요약', '문법 수정').";
+"is_snippet_label" = "텍스트 스니펫으로 사용";
+"is_snippet_desc" = "정적 텍스트 스니펫을 활성화합니다. 활성화하면 템플릿이 즉시 확장되고 AI 요청 없이 로컬 정적 텍스트({{CLIPBOARD}} 또는 {{DATE}} 지원)를 붙여넣습니다.";
+"app_binding_label" = "응용 프로그램 바인딩 (선택 사항)";
+"app_binding_desc" = "이 작업을 특정 실행 중인 앱에 바인딩합니다. 단축키를 누르면 파이프라인이 최전면 앱을 확인하고 바인딩된 작업을 실행하며, 일치하는 항목이 없으면 전역으로 폴백합니다.";
+"api_profile_label" = "API 구성 프로필";
+"api_profile_desc" = "이 작업 처리를 담당하는 API 엔드포인트를 선택합니다. 전역 활성 프로필을 상속할 수 있습니다.";
+"global_shortcut_label" = "전역 단축키";
+"global_shortcut_desc" = "키를 눌러 시스템 전체 고유 단축키를 지정합니다. 이 키를 놓으면 변환이 트리거됩니다.";
+"system_prompt_label" = "시스템 프롬프트";
+"system_prompt_desc" = "AI의 페르소나, 컨텍스트 및 운영 규칙 (예: '전문 카피에디터로 행동').";
+"user_prompt_template_label" = "사용자 프롬프트 템플릿";
+"snippet_content_label" = "스니펫 텍스트 내용";
+"prompt_template_desc_ai" = "{{TEXT}} (선택한 텍스트 블록), 선택적 {{CLIPBOARD}} 및 {{LANGUAGE}} (동적 대상 언어) 태그를 포함하는 프롬프트 템플릿.";
+"prompt_template_desc_snippet" = "즉시 붙여넣을 정적 텍스트 템플릿. {{CLIPBOARD}}, {{DATE}}, {{CURRENT_APP}} 자리 표시자를 지원합니다.";
+"response_suffix_label" = "응답 접미사 (선택 사항)";
+"response_suffix_desc" = "교체 전에 AI 출력 끝에 동적으로 추가되는 선택적 텍스트 리터럴.";
+"press_keys_to_record" = "키를 눌러 기록합니다.";
+"must_include_text_supports_lang" = "{{TEXT}}를 포함해야 합니다 ({{LANGUAGE}} 지원)";
+"supports_clipboard_date_app" = "{{CLIPBOARD}}, {{DATE}}, {{CURRENT_APP}} 지원";
+"appends_text_literally" = "생성된 AI 응답 끝에 텍스트를 그대로 추가합니다";
+"action_not_found" = "작업을 찾을 수 없음";
+"global_application" = "전역 (모든 응용 프로그램)";
+"inherit_global_active_profile" = "전역 활성 프로필 상속 (%@)";
+
+/* API Settings */
+"api_config_title" = "API 구성 프로필";
+"api_config_desc" = "AI 변환을 처리하기 위한 엔드포인트를 생성 및 구성합니다.";
+"profile_name_placeholder" = "프로필 이름";
+"profile_name_desc" = "다른 작업에 선택할 때 이 프로필을 식별하기 위한 사용자 지정 레이블.";
+"api_provider_label" = "API 제공업체";
+"api_provider_desc" = "완성 처리를 위한 AI 서비스 플랫폼 (예: OpenAI, Anthropic, Ollama, DeepSeek)을 선택합니다.";
+"api_base_url_label" = "API 기본 URL";
+"api_base_url_desc" = "API의 대상 엔드포인트 URL. 로컬 제공업체는 보통 http://localhost:11434/v1을 사용합니다.";
+"api_key_label" = "API 키";
+"api_key_desc" = "요청 인증에 사용되는 비밀 토큰. macOS 키체인에 안전하게 저장됩니다.";
+"model_name_label" = "모델 이름";
+"model_name_desc" = "실행할 특정 모델 버전 (예: gpt-4o, claude-3-5-sonnet). 동적으로 검색하거나 선택합니다.";
+"fallback_profile_label" = "폴백 API 프로필";
+"fallback_profile_desc" = "이 프로필에 대한 네트워크 요청 또는 연결이 실패하면 파이프라인이 선택한 폴백 프로필로 즉시 전환됩니다.";
+"connecting_label" = "연결 중…";
+"new_profile_title" = "새 프로필";
+"profile_copy_suffix" = "복사본";
+"clone_profile_help" = "프로필 복제";
+"delete_profile_help" = "프로필 삭제";
+"none_label" = "없음";
+
+/* Snippets HUD */
+"search_snippets_placeholder" = "스니펫 검색…";
+"no_snippets_found" = "스니펫을 찾을 수 없음";
+"navigate_label" = "탐색";
+"paste_label" = "붙여넣기";
+
+/* History */
+"history_desc" = "이전 텍스트 변환 검토, 복사 또는 삭제";
+"clear_all_confirm" = "모든 변환 기록을 지우시겠습니까?";
+"clear_all_warn" = "이전의 모든 텍스트 변환 기록이 영구적으로 삭제됩니다. 이 작업은 취소할 수 없습니다.";
+"no_history_yet" = "아직 변환이 없습니다";
+"no_matches_found" = "일치하는 항목을 찾을 수 없음";
+"no_history_desc" = "동적 단축키를 사용하여 텍스트를 변환하면 여기에 기록이 표시됩니다.";
+"search_history_placeholder" = "프롬프트, 입력 또는 출력으로 검색…";
+"copied" = "복사됨";
+"original_text" = "원본 텍스트";
+"transformed_output" = "변환된 출력";
+
+/* Fix Mode */
+"fix_mode_title" = "선택 영역 수정 모드";
+"fix_mode_captured" = "%d자 캡처됨";
+"fix_mode_preview" = "선택 미리보기:";
+"fix_mode_instruction" = "지침:";
+"fix_mode_placeholder" = "예: 영어로 번역, 간결하게 만들기, 함수형 리팩터링…";
+"captured_chars" = "%d자 캡처됨";

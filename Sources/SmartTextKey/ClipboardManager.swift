@@ -48,7 +48,7 @@ public final class ClipboardManager: ClipboardClientProtocol {
 
         // 1. Ensure Accessibility access
         guard checkAccessibilityPermissions(prompt: true) else {
-            print("Smart Text Key: Missing Accessibility permissions.")
+            AppLogger.clipboard.error("Missing Accessibility permissions.")
             return nil
         }
 
@@ -70,14 +70,14 @@ public final class ClipboardManager: ClipboardClientProtocol {
         // 4. Fallback Selection (Strategy 1):
         // If nothing is selected, fall back to Cmd+A to select all text in the active document.
         if !hasMeaningfulText(capturedText) {
-            print("Smart Text Key: Selection empty. Falling back to Cmd+A (select all)...")
+            AppLogger.clipboard.log("Selection empty. Falling back to Cmd+A (select all)...")
             usedSelectAll = true
             capturedText = await captureText(from: pasteboard, using: .selectAll)
             if Task.isCancelled { return nil }
         }
 
         guard let finalCaptured = capturedText, hasMeaningfulText(capturedText) else {
-            print("Smart Text Key: Idle protection - No text selected, aborting flow.")
+            AppLogger.clipboard.warning("Idle protection - No text selected, aborting flow.")
             // Restore previous clipboard content if no text was captured
             restorePasteboard(backup)
             return nil
@@ -215,5 +215,11 @@ public final class ClipboardManager: ClipboardClientProtocol {
             return false
         }
         return !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+    
+    public func resetState() {
+        sourceApplication = nil
+        hadSelectionInitially = false
+        usedSelectAll = false
     }
 }

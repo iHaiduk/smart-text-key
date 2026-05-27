@@ -1,0 +1,124 @@
+/* General */
+"general_settings_title" = "الإعدادات العامة";
+"api_settings_title" = "إعدادات API";
+"history_title" = "السجل";
+"global_section" = "عام";
+"ai_actions_section" = "إجراءات الذكاء الاصطناعي";
+
+/* Buttons */
+"add_action_button" = "إضافة إجراء";
+"delete_button" = "حذف";
+"cancel_button" = "إلغاء";
+"apply_fix_button" = "تطبيق التصحيح";
+"add_profile_button" = "إضافة ملف تعريف";
+"test_connection_button" = "اختبار الاتصال";
+"clear_all_button" = "مسح الكل";
+
+/* General Settings */
+"show_preview_popover" = "إظهار نافذة المعاينة المنبثقة";
+"show_preview_popover_desc" = "راجع استجابة الذكاء الاصطناعي أو عدّلها أو انسخها في نافذة منبثقة عائمة قبل أن تحل محل النص المحدد. إذا تم التعطيل، يتم استبدال النص فوراً.";
+"accent_color" = "لون التمييز";
+"accent_color_desc" = "تغيير تمييزات واجهة المستخدم والحدود النشطة والأزرار بشكل ديناميكي.";
+"hud_theme" = "سمة HUD OSD";
+"hud_theme_desc" = "اختر مظهر وضع الألوان لنظام HUD واللوحات العائمة.";
+"sound_effects" = "تفعيل المؤثرات الصوتية";
+"sound_effects_desc" = "تشغيل مؤثرات صوتية ناعمة عند بدء المعالجة ونجاحها وحالات الخطأ.";
+"launch_at_login" = "التشغيل عند تسجيل الدخول";
+"launch_at_login_desc" = "يبدأ تشغيل Smart Text Key تلقائياً في شريط القوائم عند تشغيل جهاز Mac.";
+"snippets_search_hotkey" = "الإدراج السريع للمقتطفات";
+"snippets_search_hotkey_desc" = "اختصار عالمي لاستدعاء نافذة HUD للبحث مع التنقل بمفاتيح الأسهم واللصق.";
+"fix_mode_hotkey" = "وضع التصحيح التفاعلي";
+"fix_mode_hotkey_desc" = "اختصار عالمي لالتقاط التحديد وعرض طبقة إدخال التعليمات.";
+"target_language" = "لغة التطبيق";
+"target_language_desc" = "حدد اللغة النشطة المستخدمة لواجهة المستخدم وتحويلات الذكاء الاصطناعي الافتراضية.";
+
+/* Section Titles */
+"behavior_section" = "السلوك";
+"interface_section" = "الواجهة والتصميم";
+"system_preferences_section" = "تفضيلات النظام";
+"hotkeys_section" = "الاختصارات العالمية للنظام";
+
+/* Theme Options */
+"theme_system" = "النظام";
+"theme_light" = "فاتح";
+"theme_dark" = "داكن";
+"system_language_default" = "لغة النظام (الافتراضية)";
+
+/* Action Editor */
+"new_action_title" = "إجراء جديد";
+"untitled_action" = "إجراء بلا عنوان";
+"edit_action_title" = "تعديل الإجراء";
+"action_title_label" = "عنوان الإجراء";
+"action_title_placeholder" = "مثال: إعادة الهيكلة، الترجمة إلى الروسية";
+"action_title_desc" = "الاسم المعروض في طبقات HUD والقوائم (مثل «تلخيص»، «تصحيح القواعد»).";
+"is_snippet_label" = "مقتطف نصي";
+"is_snippet_desc" = "تفعيل مقتطفات النص الثابت. عند التفعيل، يتوسع القالب فوراً ويلصق نصاً ثابتاً محلياً (يدعم {{CLIPBOARD}} أو {{DATE}}) دون إجراء أي طلبات للذكاء الاصطناعي.";
+"app_binding_label" = "ربط التطبيق (اختياري)";
+"app_binding_desc" = "اربط هذا الإجراء بتطبيق محدد قيد التشغيل. عند الضغط على الاختصار، يتحقق المعالج من التطبيق الأمامي وينفذ الإجراء المرتبط، مع الرجوع إلى الوضع العام في حال عدم وجود تطابق.";
+"api_profile_label" = "ملف تعريف إعداد API";
+"api_profile_desc" = "اختر نقطة نهاية API المسؤولة عن معالجة هذا الإجراء. يمكن أن يرث ملف التعريف النشط العام.";
+"global_shortcut_label" = "الاختصار العالمي";
+"global_shortcut_desc" = "اضغط على المفاتيح لتعيين اختصار فريد على مستوى النظام. يؤدي تحرير هذه المفاتيح إلى تشغيل التحويل.";
+"system_prompt_label" = "موجه النظام";
+"system_prompt_desc" = "شخصية الذكاء الاصطناعي وسياقه وقواعد التشغيل (مثل «تصرف كمحرر نصوص محترف»).";
+"user_prompt_template_label" = "قالب موجه المستخدم";
+"snippet_content_label" = "محتوى نص المقتطف";
+"prompt_template_desc_ai" = "قالب الموجه الذي يحتوي على {{TEXT}} (كتلة النص المحددة) والوسوم الاختيارية {{CLIPBOARD}} و{{LANGUAGE}} (اللغة الهدف الديناميكية).";
+"prompt_template_desc_snippet" = "قالب نص ثابت للصقه فوراً. يدعم العناصر النائبة {{CLIPBOARD}} و{{DATE}} و{{CURRENT_APP}}.";
+"response_suffix_label" = "لاحقة الاستجابة (اختياري)";
+"response_suffix_desc" = "نص حرفي اختياري يُضاف ديناميكياً إلى نهاية مخرجات الذكاء الاصطناعي قبل الاستبدال.";
+"press_keys_to_record" = "اضغط على المفاتيح للتسجيل.";
+"must_include_text_supports_lang" = "يجب أن يتضمن {{TEXT}} (يدعم {{LANGUAGE}})";
+"supports_clipboard_date_app" = "يدعم {{CLIPBOARD}} و{{DATE}} و{{CURRENT_APP}}";
+"appends_text_literally" = "يضيف النص حرفياً إلى نهاية أي استجابة ذكاء اصطناعي مُولَّدة";
+"action_not_found" = "الإجراء غير موجود";
+"global_application" = "عام (أي تطبيق)";
+"inherit_global_active_profile" = "وراثة ملف التعريف النشط العام (%@)";
+
+/* API Settings */
+"api_config_title" = "ملفات تعريف إعداد API";
+"api_config_desc" = "أنشئ نقاط نهاية وقم بتكوينها لمعالجة تحويلات الذكاء الاصطناعي.";
+"profile_name_placeholder" = "اسم الملف التعريفي";
+"profile_name_desc" = "تسمية مخصصة لتعريف هذا الملف التعريفي عند اختياره لإجراءات مختلفة.";
+"api_provider_label" = "مزود API";
+"api_provider_desc" = "اختر منصة خدمة الذكاء الاصطناعي (مثل OpenAI وAnthropic وOllama وDeepSeek) للتعامل مع الاستكمالات.";
+"api_base_url_label" = "عنوان URL الأساسي لـ API";
+"api_base_url_desc" = "عنوان URL لنقطة النهاية المستهدفة لـ API. عادةً ما يستخدم المزودون المحليون http://localhost:11434/v1.";
+"api_key_label" = "مفتاح API";
+"api_key_desc" = "رمز سري يُستخدم لمصادقة الطلبات. يُحفظ بأمان في سلسلة مفاتيح macOS.";
+"model_name_label" = "اسم النموذج";
+"model_name_desc" = "إصدار النموذج المحدد للتشغيل (مثل gpt-4o وclaude-3-5-sonnet). ابحث أو اختر بشكل ديناميكي.";
+"fallback_profile_label" = "ملف تعريف API الاحتياطي";
+"fallback_profile_desc" = "في حال فشل طلب الشبكة أو الاتصال بهذا الملف التعريفي، سينتقل المعالج فوراً إلى ملف التعريف الاحتياطي المحدد.";
+"connecting_label" = "جارٍ الاتصال…";
+"new_profile_title" = "ملف تعريف جديد";
+"profile_copy_suffix" = "نسخة";
+"clone_profile_help" = "استنساخ الملف التعريفي";
+"delete_profile_help" = "حذف الملف التعريفي";
+"none_label" = "لا شيء";
+
+/* Snippets HUD */
+"search_snippets_placeholder" = "البحث في المقتطفات…";
+"no_snippets_found" = "لا توجد مقتطفات";
+"navigate_label" = "تنقل";
+"paste_label" = "لصق";
+
+/* History */
+"history_desc" = "مراجعة تحويلات النص السابقة أو نسخها أو حذفها";
+"clear_all_confirm" = "هل أنت متأكد من رغبتك في مسح كل سجل التحويلات؟";
+"clear_all_warn" = "سيتم حذف جميع سجلات تحويلات النص السابقة نهائياً. لا يمكن التراجع عن هذا الإجراء.";
+"no_history_yet" = "لا توجد تحويلات بعد";
+"no_matches_found" = "لا توجد نتائج مطابقة";
+"no_history_desc" = "حوّل النصوص باستخدام اختصاراتك الديناميكية لعرض السجل هنا.";
+"search_history_placeholder" = "البحث بالموجه أو الإدخال أو المخرج…";
+"copied" = "تم النسخ";
+"original_text" = "النص الأصلي";
+"transformed_output" = "المخرج المحوَّل";
+
+/* Fix Mode */
+"fix_mode_title" = "وضع تصحيح التحديد";
+"fix_mode_captured" = "تم التقاط %d حرفاً";
+"fix_mode_preview" = "معاينة التحديد:";
+"fix_mode_instruction" = "التعليمات:";
+"fix_mode_placeholder" = "مثال: الترجمة إلى الإنجليزية، جعله موجزاً، إعادة هيكلة وظيفية…";
+"captured_chars" = "تم التقاط %d حرفاً";

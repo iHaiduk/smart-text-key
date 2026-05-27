@@ -15,6 +15,9 @@ struct SmartTextKeyApp: App {
 @MainActor
 public final class AppDelegate: NSObject, NSApplicationDelegate {
     public func applicationDidFinishLaunching(_ notification: Notification) {
+        // Apply saved theme appearance (System, Light, Dark)
+        AppSettings.shared.applyTheme()
+
         // 1. Programmatically transform the app into a background-only accessory (no Dock icon, no main menu)
         NSApp.setActivationPolicy(.accessory)
         
@@ -27,10 +30,10 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
         // 4. Automatically show Settings window on initial start for easy configuration
         StatusBarController.shared.openSettingsWindow()
         
-        print("Smart Text Key started successfully in background mode.")
+        AppLogger.general.log("Smart Text Key started successfully in background mode.")
     }
     
     public func applicationWillTerminate(_ notification: Notification) {
-        print("Smart Text Key is terminating.")
+        AppLogger.general.log("Smart Text Key is terminating.")
     }
 }

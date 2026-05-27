@@ -50,6 +50,13 @@ public final class AppSettings {
     public var hudTheme: String {
         didSet {
             userDefaults.set(hudTheme, forKey: "hudTheme")
+            applyTheme()
+        }
+    }
+
+    public var targetLanguage: String {
+        didSet {
+            userDefaults.set(targetLanguage, forKey: "targetLanguage")
         }
     }
 
@@ -74,7 +81,7 @@ public final class AppSettings {
                 launchAtLoginError = nil
             } catch {
                 let errorMsg = "Failed to \(launchAtLogin ? "enable" : "disable") launch at login: \(error.localizedDescription)"
-                print("Smart Text Key [AppSettings]: \(errorMsg)")
+                AppLogger.general.error("\(errorMsg)")
                 launchAtLoginError = errorMsg
             }
         }
@@ -94,6 +101,52 @@ public final class AppSettings {
         }
     }
 
+    @MainActor
+    public func applyTheme() {
+        let theme = hudTheme
+        if theme == "dark" {
+            NSApp.appearance = NSAppearance(named: .darkAqua)
+        } else if theme == "light" {
+            NSApp.appearance = NSAppearance(named: .aqua)
+        } else {
+            NSApp.appearance = nil // Inherit system standard
+        }
+    }
+
+    public func resolvedLanguageCode() -> String {
+        if targetLanguage == "system" {
+            return Locale.current.language.languageCode?.identifier ?? "en"
+        } else {
+            return targetLanguage
+        }
+    }
+
+    public func localized(_ key: String) -> String {
+        Localization.shared.translate(key, to: resolvedLanguageCode())
+    }
+
+    public func resolvedLanguageName() -> String {
+        let langCode = resolvedLanguageCode()
+
+        switch langCode.lowercased() {
+        case "en": return "English"
+        case "es": return "Spanish"
+        case "fr": return "French"
+        case "de": return "German"
+        case "it": return "Italian"
+        case "pt": return "Portuguese"
+        case "ru": return "Russian"
+        case "uk": return "Ukrainian"
+        case "zh": return "Chinese"
+        case "ja": return "Japanese"
+        case "ko": return "Korean"
+        case "vi": return "Vietnamese"
+        case "ar": return "Arabic"
+        case "hi": return "Hindi"
+        default: return "English"
+        }
+    }
+
     private init() {
         // 1. Declare local variables for the loading phase to satisfy Swift's strict initialization rules
         let loadedApiConfigs: [APIConfig]
@@ -104,6 +157,7 @@ public final class AppSettings {
         let loadedHudTheme: String
         let loadedEnableSoundEffects: Bool
         let loadedLaunchAtLogin: Bool
+        let loadedTargetLanguage: String
 
         let defaults = UserDefaults.standard
 
@@ -181,6 +235,7 @@ public final class AppSettings {
         loadedHudTheme = defaults.string(forKey: "hudTheme") ?? "system"
         loadedEnableSoundEffects = defaults.object(forKey: "enableSoundEffects") as? Bool ?? true
         loadedLaunchAtLogin = defaults.bool(forKey: "launchAtLogin")
+        loadedTargetLanguage = defaults.string(forKey: "targetLanguage") ?? "system"
 
         // 7. Assign loaded values to stored properties to complete phase 1 of Swift initialization
         self.apiConfigs = loadedApiConfigs
@@ -191,6 +246,7 @@ public final class AppSettings {
         self.hudTheme = loadedHudTheme
         self.enableSoundEffects = loadedEnableSoundEffects
         self.launchAtLogin = loadedLaunchAtLogin
+        self.targetLanguage = loadedTargetLanguage
     }
 
     private func saveAPIConfigs() {

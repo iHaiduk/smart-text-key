@@ -1,0 +1,124 @@
+/* General */
+"general_settings_title" = "Impostazioni generali";
+"api_settings_title" = "Impostazioni API";
+"history_title" = "Cronologia";
+"global_section" = "GLOBALE";
+"ai_actions_section" = "AZIONI IA";
+
+/* Buttons */
+"add_action_button" = "Aggiungi azione";
+"delete_button" = "Elimina";
+"cancel_button" = "Annulla";
+"apply_fix_button" = "Applica correzione";
+"add_profile_button" = "Aggiungi profilo";
+"test_connection_button" = "Testa connessione";
+"clear_all_button" = "Cancella tutto";
+
+/* General Settings */
+"show_preview_popover" = "Mostra anteprima flottante";
+"show_preview_popover_desc" = "Rivedi, modifica o copia la risposta dell'IA in un pannello flottante prima che sostituisca il testo evidenziato. Se disabilitato, il testo viene sostituito istantaneamente.";
+"accent_color" = "Colore di accento";
+"accent_color_desc" = "Modifica dinamicamente le evidenziazioni dell'interfaccia, i bordi attivi e i pulsanti.";
+"hud_theme" = "Tema HUD OSD";
+"hud_theme_desc" = "Scegli la modalità colore per l'HUD di sistema e i pannelli flottanti.";
+"sound_effects" = "Abilita effetti sonori";
+"sound_effects_desc" = "Riproduce effetti sonori discreti all'avvio della pipeline, in caso di successo o di errore.";
+"launch_at_login" = "Avvia all'accesso";
+"launch_at_login_desc" = "Avvia automaticamente Smart Text Key nella barra dei menu all'avvio del Mac.";
+"snippets_search_hotkey" = "Inserimento rapido snippet";
+"snippets_search_hotkey_desc" = "Scorciatoia globale per aprire l'HUD di ricerca con navigazione tramite tasti freccia e incolla.";
+"fix_mode_hotkey" = "Modalità correzione interattiva";
+"fix_mode_hotkey_desc" = "Scorciatoia globale per acquisire la selezione e mostrare l'overlay per l'inserimento delle istruzioni.";
+"target_language" = "Lingua dell'app";
+"target_language_desc" = "Seleziona la lingua attiva per l'interfaccia utente e le trasformazioni IA predefinite.";
+
+/* Section Titles */
+"behavior_section" = "COMPORTAMENTO";
+"interface_section" = "INTERFACCIA E STILE";
+"system_preferences_section" = "PREFERENZE DI SISTEMA";
+"hotkeys_section" = "SCORCIATOIE GLOBALI DI SISTEMA";
+
+/* Theme Options */
+"theme_system" = "Sistema";
+"theme_light" = "Chiaro";
+"theme_dark" = "Scuro";
+"system_language_default" = "Lingua di sistema (predefinita)";
+
+/* Action Editor */
+"new_action_title" = "Nuova azione";
+"untitled_action" = "Azione senza titolo";
+"edit_action_title" = "Modifica azione";
+"action_title_label" = "Titolo dell'azione";
+"action_title_placeholder" = "es. Refactoring, Traduci in russo";
+"action_title_desc" = "Nome visualizzato negli overlay HUD e negli elenchi (es. «Riassumi», «Correggi grammatica»).";
+"is_snippet_label" = "È uno snippet di testo";
+"is_snippet_desc" = "Attiva gli snippet di testo statici. Quando abilitato, il modello si espande istantaneamente e incolla testo statico locale (con {{CLIPBOARD}} o {{DATE}}) senza effettuare richieste IA.";
+"app_binding_label" = "Associazione applicazione (opzionale)";
+"app_binding_desc" = "Associa questa azione a un'app specifica in esecuzione. Quando premi la scorciatoia, la pipeline controlla l'app in primo piano ed esegue l'azione associata, tornando al globale se non trova corrispondenza.";
+"api_profile_label" = "Profilo di configurazione API";
+"api_profile_desc" = "Scegli quale endpoint API è responsabile dell'elaborazione di questa azione. Può ereditare il profilo attivo globale.";
+"global_shortcut_label" = "Scorciatoia globale";
+"global_shortcut_desc" = "Premi i tasti per assegnare una scorciatoia univoca a livello di sistema. Rilasciare questi tasti attiva la trasformazione.";
+"system_prompt_label" = "Prompt di sistema";
+"system_prompt_desc" = "Il personaggio, il contesto e le regole operative dell'IA (es. «Agisci come correttore di bozze professionale»).";
+"user_prompt_template_label" = "Modello di prompt utente";
+"snippet_content_label" = "Contenuto dello snippet";
+"prompt_template_desc_ai" = "Il modello di prompt contenente {{TEXT}} (il blocco di testo selezionato), i tag opzionali {{CLIPBOARD}} e {{LANGUAGE}} (lingua target dinamica).";
+"prompt_template_desc_snippet" = "Modello di testo statico da incollare istantaneamente. Supporta i segnaposto {{CLIPBOARD}}, {{DATE}} e {{CURRENT_APP}}.";
+"response_suffix_label" = "Suffisso risposta (opzionale)";
+"response_suffix_desc" = "Testo letterale opzionale aggiunto dinamicamente alla fine dell'output dell'IA prima della sostituzione.";
+"press_keys_to_record" = "Premi i tasti per registrare.";
+"must_include_text_supports_lang" = "Deve includere {{TEXT}} (supporta {{LANGUAGE}})";
+"supports_clipboard_date_app" = "Supporta {{CLIPBOARD}}, {{DATE}}, {{CURRENT_APP}}";
+"appends_text_literally" = "Aggiunge il testo letteralmente alla fine di qualsiasi risposta IA generata";
+"action_not_found" = "Azione non trovata";
+"global_application" = "Globale (qualsiasi applicazione)";
+"inherit_global_active_profile" = "Eredita profilo attivo globale (%@)";
+
+/* API Settings */
+"api_config_title" = "Profili di configurazione API";
+"api_config_desc" = "Crea e configura endpoint per elaborare le trasformazioni IA.";
+"profile_name_placeholder" = "Nome profilo";
+"profile_name_desc" = "Un'etichetta personalizzata per identificare questo profilo quando lo si sceglie per le diverse azioni.";
+"api_provider_label" = "Provider API";
+"api_provider_desc" = "Scegli la piattaforma del servizio IA (es. OpenAI, Anthropic, Ollama, DeepSeek) per gestire i completamenti.";
+"api_base_url_label" = "URL base API";
+"api_base_url_desc" = "L'URL endpoint di destinazione per l'API. I provider locali di solito usano http://localhost:11434/v1.";
+"api_key_label" = "Chiave API";
+"api_key_desc" = "Token segreto per autenticare le richieste. Salvato in modo sicuro nel Portachiavi di macOS.";
+"model_name_label" = "Nome modello";
+"model_name_desc" = "Versione specifica del modello da eseguire (es. gpt-4o, claude-3-5-sonnet). Cerca o scegli dinamicamente.";
+"fallback_profile_label" = "Profilo API di fallback";
+"fallback_profile_desc" = "Se una richiesta di rete o la connessione a questo profilo fallisce, la pipeline passerà immediatamente al profilo di fallback selezionato.";
+"connecting_label" = "Connessione in corso…";
+"new_profile_title" = "Nuovo profilo";
+"profile_copy_suffix" = "Copia";
+"clone_profile_help" = "Clona profilo";
+"delete_profile_help" = "Elimina profilo";
+"none_label" = "Nessuno";
+
+/* Snippets HUD */
+"search_snippets_placeholder" = "Cerca snippet…";
+"no_snippets_found" = "Nessuno snippet trovato";
+"navigate_label" = "Naviga";
+"paste_label" = "Incolla";
+
+/* History */
+"history_desc" = "Rivedi, copia o elimina le trasformazioni di testo precedenti";
+"clear_all_confirm" = "Sei sicuro di voler cancellare tutta la cronologia delle trasformazioni?";
+"clear_all_warn" = "Tutti i record delle trasformazioni di testo precedenti verranno eliminati definitivamente. Questa azione non può essere annullata.";
+"no_history_yet" = "Ancora nessuna trasformazione";
+"no_matches_found" = "Nessuna corrispondenza trovata";
+"no_history_desc" = "Trasforma il testo usando le scorciatoie dinamiche per vedere la cronologia qui.";
+"search_history_placeholder" = "Cerca per prompt, input o output…";
+"copied" = "Copiato";
+"original_text" = "Testo originale";
+"transformed_output" = "Output trasformato";
+
+/* Fix Mode */
+"fix_mode_title" = "Modalità correzione selezione";
+"fix_mode_captured" = "%d caratteri acquisiti";
+"fix_mode_preview" = "ANTEPRIMA SELEZIONE:";
+"fix_mode_instruction" = "ISTRUZIONE:";
+"fix_mode_placeholder" = "es. traduci in inglese, rendilo conciso, refactoring funzionale…";
+"captured_chars" = "%d caratteri acquisiti";

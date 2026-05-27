@@ -1,0 +1,126 @@
+/* Smart Text Key — Vietnamese Localizable Strings */
+
+/* Sidebar / Navigation */
+"general_settings_title" = "Cài đặt chung";
+"api_settings_title" = "Cấu hình API";
+"history_title" = "Lịch sử";
+"global_section" = "HỆ THỐNG";
+"ai_actions_section" = "HÀNH ĐỘNG AI";
+
+/* Buttons */
+"add_action_button" = "Thêm hành động";
+"delete_button" = "Xóa";
+"cancel_button" = "Hủy bỏ";
+"apply_fix_button" = "Áp dụng";
+"add_profile_button" = "Thêm hồ sơ";
+"test_connection_button" = "Kiểm tra kết nối";
+"clear_all_button" = "Xóa tất cả";
+
+/* General Settings */
+"show_preview_popover" = "Hiện popover xem trước";
+"show_preview_popover_desc" = "Xem lại, sửa hoặc sao chép câu trả lời từ AI trong cửa sổ nổi trước khi ghi đè văn bản. Nếu tắt, văn bản sẽ thay thế ngay lập tức.";
+"accent_color" = "Màu sắc nổi bật";
+"accent_color_desc" = "Thay đổi màu sắc giao diện, nút bấm và viền hiệu ứng một cách linh hoạt.";
+"hud_theme" = "Giao diện HUD";
+"hud_theme_desc" = "Chọn chủ đề hiển thị (Sáng/Tối/Hệ thống) cho các bảng nổi HUD.";
+"sound_effects" = "Bật hiệu ứng âm thanh";
+"sound_effects_desc" = "Phát âm thanh nhẹ khi bắt đầu, thành công hoặc gặp lỗi.";
+"launch_at_login" = "Khởi động cùng máy";
+"launch_at_login_desc" = "Tự động chạy ứng dụng Smart Text Key trên thanh Menu khi bật Mac.";
+"snippets_search_hotkey" = "Chèn nhanh snippet";
+"snippets_search_hotkey_desc" = "Phím tắt toàn hệ thống để tìm kiếm nhanh các đoạn văn bản lưu sẵn.";
+"fix_mode_hotkey" = "Chế độ sửa tương tác";
+"fix_mode_hotkey_desc" = "Phím tắt để chụp vùng chọn và nhập hướng dẫn chỉnh sửa trực tiếp bằng AI.";
+"target_language" = "Ngôn ngữ ứng dụng";
+"target_language_desc" = "Chọn ngôn ngữ hiển thị giao diện và mặc định dịch thuật AI.";
+
+/* Sections */
+"behavior_section" = "HÀNH VI";
+"interface_section" = "GIAO DIỆN & PHONG CÁCH";
+"system_preferences_section" = "TÙY CHỌN HỆ THỐNG";
+"hotkeys_section" = "PHÍM TẮT TOÀN CẦU";
+
+/* Theme Options */
+"theme_system" = "Hệ thống";
+"theme_light" = "Sáng";
+"theme_dark" = "Tối";
+"system_language_default" = "Ngôn ngữ hệ thống (Mặc định)";
+
+/* Action Editor */
+"new_action_title" = "Hành động mới";
+"untitled_action" = "Hành động không tên";
+"edit_action_title" = "Chỉnh sửa hành động";
+"action_title_label" = "Tên hành động";
+"action_title_placeholder" = "ví dụ: Tóm tắt, Dịch sang tiếng Anh";
+"action_title_desc" = "Tên hiển thị trên HUD (Ví dụ: 'Tóm tắt', 'Sửa ngữ pháp').";
+"is_snippet_label" = "Là đoạn văn bản tĩnh (Snippet)";
+"is_snippet_desc" = "Bật chèn nhanh. Khi kích hoạt, văn bản mẫu được dán ngay lập tức (hỗ trợ {{CLIPBOARD}} hoặc {{DATE}}) không cần gửi API AI.";
+"app_binding_label" = "Liên kết ứng dụng (Tùy chọn)";
+"app_binding_desc" = "Gắn hành động này với ứng dụng đang chạy cụ thể. Khi bấm phím tắt, hệ thống ưu tiên chạy hành động liên kết với ứng dụng hiện tại.";
+"api_profile_label" = "Hồ sơ cấu hình API";
+"api_profile_desc" = "Chọn điểm cuối API xử lý hành động này. Có thể kế thừa cấu hình chung.";
+"global_shortcut_label" = "Phím tắt toàn cầu";
+"global_shortcut_desc" = "Nhấn tổ hợp phím để gán phím tắt. Thả phím sẽ kích hoạt hành động.";
+"system_prompt_label" = "Nhắc nhở hệ thống (System Prompt)";
+"system_prompt_desc" = "Vai trò, ngữ cảnh và quy tắc của AI (Ví dụ: 'Hãy làm việc như một biên tập viên chuyên nghiệp').";
+"user_prompt_template_label" = "Mẫu nội dung nhắc nhở";
+"snippet_content_label" = "Nội dung văn bản tĩnh";
+"prompt_template_desc_ai" = "Mẫu chứa thẻ {{TEXT}} (văn bản được chọn), tùy chọn thẻ {{CLIPBOARD}} và {{LANGUAGE}} (ngôn ngữ đích).";
+"prompt_template_desc_snippet" = "Mẫu văn bản dán ngay lập tức. Hỗ trợ các thẻ {{CLIPBOARD}}, {{DATE}} và {{CURRENT_APP}}.";
+"response_suffix_label" = "Hậu tố kết quả (Tùy chọn)";
+"response_suffix_desc" = "Ký tự literal tự động thêm vào cuối kết quả trả về của AI.";
+"press_keys_to_record" = "Nhấn tổ hợp phím để ghi nhận.";
+"must_include_text_supports_lang" = "Phải bao gồm {{TEXT}} (hỗ trợ {{LANGUAGE}})";
+"supports_clipboard_date_app" = "Hỗ trợ {{CLIPBOARD}}, {{DATE}}, {{CURRENT_APP}}";
+"appends_text_literally" = "Tự động thêm ký tự vào cuối kết quả AI trả về";
+"action_not_found" = "Không tìm thấy hành động";
+"global_application" = "Toàn cục (Mọi ứng dụng)";
+"inherit_global_active_profile" = "Kế thừa hồ sơ chung (%@)";
+
+/* API Settings */
+"api_config_title" = "Danh sách cấu hình API";
+"api_config_desc" = "Tạo và cấu hình các máy chủ API để xử lý yêu cầu AI.";
+"profile_name_placeholder" = "Tên hồ sơ";
+"profile_name_desc" = "Nhãn tùy chỉnh để nhận diện hồ sơ cấu hình.";
+"api_provider_label" = "Nhà cung cấp API";
+"api_provider_desc" = "Chọn nền tảng AI (như OpenAI, Anthropic, Ollama, DeepSeek).";
+"api_base_url_label" = "Đường dẫn API Base URL";
+"api_base_url_desc" = "Địa chỉ máy chủ API. Các dịch vụ cục bộ thường dùng http://localhost:11434/v1.";
+"api_key_label" = "Khóa API Key";
+"api_key_desc" = "Khóa bí mật dùng để xác thực. Được lưu trữ an toàn trong macOS Keychain.";
+"model_name_label" = "Tên mô hình (Model Name)";
+"model_name_desc" = "Phiên bản mô hình chạy cụ thể (ví dụ: gpt-4o, claude-3-5-sonnet).";
+"fallback_profile_label" = "Hồ sơ API dự phòng";
+"fallback_profile_desc" = "Nếu hồ sơ chính gặp lỗi kết nối, hệ thống sẽ lập tức chuyển đổi dự phòng sang cấu hình này.";
+"connecting_label" = "Đang kết nối...";
+"new_profile_title" = "Hồ sơ mới";
+"profile_copy_suffix" = "Bản sao";
+"clone_profile_help" = "Sao chép hồ sơ";
+"delete_profile_help" = "Xóa hồ sơ";
+"none_label" = "Không";
+
+/* Snippets Search Overlay */
+"search_snippets_placeholder" = "Tìm kiếm snippet...";
+"no_snippets_found" = "Không tìm thấy snippet nào";
+"navigate_label" = "Di chuyển";
+"paste_label" = "Dán";
+
+/* History */
+"history_desc" = "Xem lại, sao chép hoặc xóa lịch sử các lượt chuyển đổi văn bản";
+"clear_all_confirm" = "Bạn có chắc chắn muốn xóa toàn bộ lịch sử không?";
+"clear_all_warn" = "Hành động này sẽ xóa vĩnh viễn toàn bộ lịch sử chuyển đổi. Không thể hoàn tác.";
+"no_history_yet" = "Chưa có lượt chuyển đổi nào";
+"no_matches_found" = "Không tìm thấy kết quả phù hợp";
+"no_history_desc" = "Thực hiện chuyển đổi văn bản bằng phím tắt để ghi lịch sử tại đây.";
+"search_history_placeholder" = "Tìm theo tên hành động, đầu vào hoặc kết quả...";
+"copied" = "Đã sao chép";
+"original_text" = "Văn bản gốc";
+"transformed_output" = "Kết quả chuyển đổi";
+
+/* Fix Mode Overlay */
+"fix_mode_title" = "Chế độ sửa nhanh tương tác";
+"fix_mode_captured" = "Đã chụp %d ký tự";
+"fix_mode_preview" = "XEM TRƯỚC VÙNG CHỌN:";
+"fix_mode_instruction" = "HƯỚNG DẪN CHO AI:";
+"fix_mode_placeholder" = "Ví dụ: dịch sang tiếng Anh, viết ngắn gọn lại, định dạng code...";
+"captured_chars" = "Đã chụp %d ký tự";

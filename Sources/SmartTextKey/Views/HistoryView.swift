@@ -30,9 +30,9 @@ struct HistoryView: View {
             // Header Title & Global Action
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Transformation History")
+                    Text(AppSettings.shared.localized("history_title"))
                         .font(.title2.bold())
-                    Text("Review, copy, or delete past text transformations")
+                    Text(AppSettings.shared.localized("history_desc"))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -43,22 +43,22 @@ struct HistoryView: View {
                     Button(role: .destructive) {
                         showClearConfirmation = true
                     } label: {
-                        Label("Clear All", systemImage: "trash.fill")
+                        Label(AppSettings.shared.localized("clear_all_button"), systemImage: "trash.fill")
                             .font(.system(size: 12, weight: .semibold))
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(.red.opacity(0.8))
                     .confirmationDialog(
-                        "Are you sure you want to clear all transformation history?",
+                        AppSettings.shared.localized("clear_all_confirm"),
                         isPresented: $showClearConfirmation
                     ) {
-                        Button("Clear All", role: .destructive) {
+                        Button(AppSettings.shared.localized("clear_all_button"), role: .destructive) {
                             HistoryManager.shared.clearAll()
                             loadHistory()
                         }
-                        Button("Cancel", role: .cancel) {}
+                        Button(AppSettings.shared.localized("cancel_button"), role: .cancel) {}
                     } message: {
-                        Text("This will permanently delete all records of past text transformations. This action cannot be undone.")
+                        Text(AppSettings.shared.localized("clear_all_warn"))
                     }
                 }
             }
@@ -71,7 +71,7 @@ struct HistoryView: View {
                     Image(systemName: "magnifyingglass")
                         .foregroundStyle(.secondary)
                     
-                    TextField("Search by prompt, input, or output...", text: $searchText)
+                    TextField(AppSettings.shared.localized("search_history_placeholder"), text: $searchText)
                         .textFieldStyle(.plain)
                         .font(.system(size: 13))
                     
@@ -106,11 +106,11 @@ struct HistoryView: View {
                         .opacity(0.6)
                         .padding(.bottom, 8)
                     
-                    Text(searchText.isEmpty ? "No transformations yet" : "No matches found")
+                    Text(searchText.isEmpty ? AppSettings.shared.localized("no_history_yet") : AppSettings.shared.localized("no_matches_found"))
                         .font(.headline)
                         .foregroundStyle(.primary)
                     
-                    Text(searchText.isEmpty ? "Transform text using your dynamic hotkeys to see history here." : "Try adjusting your search criteria.")
+                    Text(searchText.isEmpty ? AppSettings.shared.localized("no_history_desc") : AppSettings.shared.localized("no_matches_found"))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -224,7 +224,7 @@ struct HistoryCard: View {
                             Image(systemName: copyFeedback ? "checkmark" : "doc.on.doc")
                                 .font(.system(size: 11))
                             if copyFeedback {
-                                Text("Copied")
+                                Text(AppSettings.shared.localized("copied"))
                                     .font(.system(size: 10, weight: .semibold))
                             }
                         }
@@ -246,7 +246,7 @@ struct HistoryCard: View {
                             .cornerRadius(4)
                     }
                     .buttonStyle(.plain)
-                    .help("Delete transformation record")
+                    .help(AppSettings.shared.localized("delete_button"))
                 }
                 .opacity(isHovered || isExpanded ? 1 : 0.6)
             }
@@ -264,7 +264,7 @@ struct HistoryCard: View {
                 VStack(alignment: .leading, spacing: 12) {
                     // Original Text
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Original Text")
+                        Text(AppSettings.shared.localized("original_text"))
                             .font(.system(size: 10, weight: .bold))
                             .foregroundStyle(.secondary)
                         
@@ -280,7 +280,7 @@ struct HistoryCard: View {
                     
                     // Transformed Text
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Transformed Output")
+                        Text(AppSettings.shared.localized("transformed_output"))
                             .font(.system(size: 10, weight: .bold))
                             .foregroundStyle(.secondary)
                         

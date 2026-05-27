@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 
 @MainActor
-public final class StatusBarController: NSObject, NSWindowDelegate {
+public final class StatusBarController: NSObject, NSWindowDelegate, StatusIndicatorProtocol {
     public static let shared = StatusBarController()
     
     private var statusItem: NSStatusItem!

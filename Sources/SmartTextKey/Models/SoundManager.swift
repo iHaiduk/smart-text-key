@@ -1,6 +1,6 @@
 import AppKit
 
-public final class SoundManager: Sendable {
+public final class SoundManager: SoundPlayerProtocol, Sendable {
     public static let shared = SoundManager()
     
     private init() {}

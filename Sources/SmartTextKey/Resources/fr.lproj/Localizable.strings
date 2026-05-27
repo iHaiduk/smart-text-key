@@ -1,0 +1,124 @@
+/* General */
+"general_settings_title" = "Réglages généraux";
+"api_settings_title" = "Réglages API";
+"history_title" = "Historique";
+"global_section" = "GLOBAL";
+"ai_actions_section" = "ACTIONS IA";
+
+/* Buttons */
+"add_action_button" = "Ajouter une action";
+"delete_button" = "Supprimer";
+"cancel_button" = "Annuler";
+"apply_fix_button" = "Appliquer la correction";
+"add_profile_button" = "Ajouter un profil";
+"test_connection_button" = "Tester la connexion";
+"clear_all_button" = "Tout effacer";
+
+/* General Settings */
+"show_preview_popover" = "Afficher l'aperçu flottant";
+"show_preview_popover_desc" = "Révisez, modifiez ou copiez la réponse de l'IA dans un panneau flottant avant qu'elle ne remplace votre texte sélectionné. Si désactivé, le texte est remplacé instantanément.";
+"accent_color" = "Couleur d'accentuation";
+"accent_color_desc" = "Modifiez dynamiquement les mises en évidence de l'interface, les bordures actives et les boutons.";
+"hud_theme" = "Thème HUD OSD";
+"hud_theme_desc" = "Choisissez le mode d'apparence des couleurs pour le HUD système et les panneaux flottants.";
+"sound_effects" = "Activer les effets sonores";
+"sound_effects_desc" = "Joue des effets sonores discrets au démarrage du pipeline, ainsi qu'en cas de succès ou d'erreur.";
+"launch_at_login" = "Démarrer à la connexion";
+"launch_at_login_desc" = "Démarre automatiquement Smart Text Key dans la barre de menus au démarrage de votre Mac.";
+"snippets_search_hotkey" = "Insertion rapide de snippets";
+"snippets_search_hotkey_desc" = "Raccourci global pour afficher le HUD de recherche avec navigation par touches fléchées et collage.";
+"fix_mode_hotkey" = "Mode correction interactif";
+"fix_mode_hotkey_desc" = "Raccourci global pour capturer la sélection et afficher l'interface de saisie d'instruction.";
+"target_language" = "Langue de l'application";
+"target_language_desc" = "Sélectionnez la langue active utilisée pour l'interface utilisateur et les transformations IA par défaut.";
+
+/* Section Titles */
+"behavior_section" = "COMPORTEMENT";
+"interface_section" = "INTERFACE ET STYLE";
+"system_preferences_section" = "PRÉFÉRENCES SYSTÈME";
+"hotkeys_section" = "RACCOURCIS SYSTÈME GLOBAUX";
+
+/* Theme Options */
+"theme_system" = "Système";
+"theme_light" = "Clair";
+"theme_dark" = "Sombre";
+"system_language_default" = "Langue du système (par défaut)";
+
+/* Action Editor */
+"new_action_title" = "Nouvelle action";
+"untitled_action" = "Action sans titre";
+"edit_action_title" = "Modifier l'action";
+"action_title_label" = "Titre de l'action";
+"action_title_placeholder" = "ex. Refactoriser, Traduire en russe";
+"action_title_desc" = "Nom affiché dans les HUD et les listes (ex. « Résumer », « Corriger la grammaire »).";
+"is_snippet_label" = "Est un snippet de texte";
+"is_snippet_desc" = "Activer les snippets de texte statiques. Lorsqu'activé, le modèle se développe instantanément et colle du texte statique local (avec {{CLIPBOARD}} ou {{DATE}}) sans effectuer de requêtes IA.";
+"app_binding_label" = "Association à l'application (facultatif)";
+"app_binding_desc" = "Associez cette action à une application spécifique en cours d'exécution. Lors de l'appui sur le raccourci, le pipeline vérifie l'application au premier plan et exécute l'action associée, en revenant au mode global si aucune correspondance n'est trouvée.";
+"api_profile_label" = "Profil de configuration API";
+"api_profile_desc" = "Choisissez quel point de terminaison API est responsable du traitement de cette action. Peut hériter du profil actif global.";
+"global_shortcut_label" = "Raccourci global";
+"global_shortcut_desc" = "Appuyez sur des touches pour attribuer un raccourci unique à l'échelle du système. Relâcher ces touches déclenche la transformation.";
+"system_prompt_label" = "Invite système";
+"system_prompt_desc" = "Le personnage, le contexte et les règles opérationnelles de l'IA (ex. « Agir en tant que correcteur professionnel »).";
+"user_prompt_template_label" = "Modèle d'invite utilisateur";
+"snippet_content_label" = "Contenu du snippet";
+"prompt_template_desc_ai" = "Le modèle d'invite contenant {{TEXT}} (le bloc de texte sélectionné), ainsi que les balises facultatives {{CLIPBOARD}} et {{LANGUAGE}} (langue cible dynamique).";
+"prompt_template_desc_snippet" = "Modèle de texte statique à coller instantanément. Prend en charge les espaces réservés {{CLIPBOARD}}, {{DATE}} et {{CURRENT_APP}}.";
+"response_suffix_label" = "Suffixe de réponse (facultatif)";
+"response_suffix_desc" = "Texte littéral optionnel ajouté dynamiquement à la fin de la sortie IA avant le remplacement.";
+"press_keys_to_record" = "Appuyez sur les touches pour enregistrer.";
+"must_include_text_supports_lang" = "Doit inclure {{TEXT}} (prend en charge {{LANGUAGE}})";
+"supports_clipboard_date_app" = "Prend en charge {{CLIPBOARD}}, {{DATE}}, {{CURRENT_APP}}";
+"appends_text_literally" = "Ajoute le texte littéralement à la fin de toute réponse IA générée";
+"action_not_found" = "Action introuvable";
+"global_application" = "Global (toute application)";
+"inherit_global_active_profile" = "Hériter du profil actif global (%@)";
+
+/* API Settings */
+"api_config_title" = "Profils de configuration API";
+"api_config_desc" = "Créez et configurez des points de terminaison pour traiter les transformations IA.";
+"profile_name_placeholder" = "Nom du profil";
+"profile_name_desc" = "Un libellé personnalisé pour identifier ce profil lors de sa sélection pour différentes actions.";
+"api_provider_label" = "Fournisseur API";
+"api_provider_desc" = "Choisissez la plateforme de service IA (ex. OpenAI, Anthropic, Ollama, DeepSeek) pour gérer les complétions.";
+"api_base_url_label" = "URL de base de l'API";
+"api_base_url_desc" = "L'URL du point de terminaison cible pour l'API. Les fournisseurs locaux utilisent généralement http://localhost:11434/v1.";
+"api_key_label" = "Clé API";
+"api_key_desc" = "Jeton secret utilisé pour authentifier les requêtes. Enregistré en toute sécurité dans le trousseau macOS.";
+"model_name_label" = "Nom du modèle";
+"model_name_desc" = "Version spécifique du modèle à exécuter (ex. gpt-4o, claude-3-5-sonnet). Recherchez ou choisissez dynamiquement.";
+"fallback_profile_label" = "Profil API de secours";
+"fallback_profile_desc" = "Si une requête réseau ou une connexion à ce profil échoue, le pipeline basculera instantanément vers le profil de secours sélectionné.";
+"connecting_label" = "Connexion en cours…";
+"new_profile_title" = "Nouveau profil";
+"profile_copy_suffix" = "Copie";
+"clone_profile_help" = "Dupliquer le profil";
+"delete_profile_help" = "Supprimer le profil";
+"none_label" = "Aucun";
+
+/* Snippets HUD */
+"search_snippets_placeholder" = "Rechercher des snippets…";
+"no_snippets_found" = "Aucun snippet trouvé";
+"navigate_label" = "Naviguer";
+"paste_label" = "Coller";
+
+/* History */
+"history_desc" = "Révisez, copiez ou supprimez les transformations de texte passées";
+"clear_all_confirm" = "Êtes-vous sûr de vouloir effacer tout l'historique des transformations ?";
+"clear_all_warn" = "Toutes les transformations de texte passées seront définitivement supprimées. Cette action est irréversible.";
+"no_history_yet" = "Aucune transformation pour l'instant";
+"no_matches_found" = "Aucun résultat trouvé";
+"no_history_desc" = "Transformez du texte à l'aide de vos raccourcis dynamiques pour voir l'historique ici.";
+"search_history_placeholder" = "Rechercher par invite, entrée ou sortie…";
+"copied" = "Copié";
+"original_text" = "Texte original";
+"transformed_output" = "Résultat transformé";
+
+/* Fix Mode */
+"fix_mode_title" = "Mode correction de sélection";
+"fix_mode_captured" = "%d caractères capturés";
+"fix_mode_preview" = "APERÇU DE LA SÉLECTION :";
+"fix_mode_instruction" = "INSTRUCTION :";
+"fix_mode_placeholder" = "ex. traduire en anglais, le rendre concis, refactoriser fonctionnel…";
+"captured_chars" = "%d caractères capturés";

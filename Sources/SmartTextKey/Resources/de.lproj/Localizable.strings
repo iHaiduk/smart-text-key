@@ -1,0 +1,124 @@
+/* General */
+"general_settings_title" = "Allgemeine Einstellungen";
+"api_settings_title" = "API-Einstellungen";
+"history_title" = "Verlauf";
+"global_section" = "GLOBAL";
+"ai_actions_section" = "KI-AKTIONEN";
+
+/* Buttons */
+"add_action_button" = "Aktion hinzufügen";
+"delete_button" = "Löschen";
+"cancel_button" = "Abbrechen";
+"apply_fix_button" = "Korrektur anwenden";
+"add_profile_button" = "Profil hinzufügen";
+"test_connection_button" = "Verbindung testen";
+"clear_all_button" = "Alles löschen";
+
+/* General Settings */
+"show_preview_popover" = "Vorschau-Popover anzeigen";
+"show_preview_popover_desc" = "Überprüfen, bearbeiten oder kopieren Sie die KI-Antwort in einem schwebenden Popover, bevor sie Ihren markierten Text ersetzt. Wenn deaktiviert, wird der Text sofort ersetzt.";
+"accent_color" = "Akzentfarbe";
+"accent_color_desc" = "Ändern Sie UI-Hervorhebungen, aktive Rahmen und Schaltflächen dynamisch.";
+"hud_theme" = "HUD OSD-Thema";
+"hud_theme_desc" = "Wählen Sie den Farbmodus für das System-HUD und schwebende Panels.";
+"sound_effects" = "Soundeffekte aktivieren";
+"sound_effects_desc" = "Spielt sanfte Soundeffekte beim Pipeline-Start, Erfolg und Fehlerzuständen ab.";
+"launch_at_login" = "Bei Anmeldung starten";
+"launch_at_login_desc" = "Startet Smart Text Key automatisch in der Menüleiste, wenn Ihr Mac hochfährt.";
+"snippets_search_hotkey" = "Schnelleinfügen von Snippets";
+"snippets_search_hotkey_desc" = "Globaler Hotkey zum Aufrufen des Such-HUD für die Navigation mit Pfeiltasten und Einfügen.";
+"fix_mode_hotkey" = "Interaktiver Korrektururmodus";
+"fix_mode_hotkey_desc" = "Globaler Hotkey zum Erfassen der Auswahl und Anzeigen der Eingabeoberfläche für Anweisungen.";
+"target_language" = "App-Sprache";
+"target_language_desc" = "Wählen Sie die aktive Sprache für die Benutzeroberfläche und Standard-KI-Transformationen.";
+
+/* Section Titles */
+"behavior_section" = "VERHALTEN";
+"interface_section" = "OBERFLÄCHE & GESTALTUNG";
+"system_preferences_section" = "SYSTEMEINSTELLUNGEN";
+"hotkeys_section" = "GLOBALE SYSTEM-HOTKEYS";
+
+/* Theme Options */
+"theme_system" = "System";
+"theme_light" = "Hell";
+"theme_dark" = "Dunkel";
+"system_language_default" = "Systemsprache (Standard)";
+
+/* Action Editor */
+"new_action_title" = "Neue Aktion";
+"untitled_action" = "Unbenannte Aktion";
+"edit_action_title" = "Aktion bearbeiten";
+"action_title_label" = "Aktionstitel";
+"action_title_placeholder" = "z. B. Refaktorieren, Ins Russische übersetzen";
+"action_title_desc" = "Name, der in HUD-Overlays und Listen angezeigt wird (z. B. „Zusammenfassen", „Grammatik korrigieren").";
+"is_snippet_label" = "Ist Text-Snippet";
+"is_snippet_desc" = "Aktiviert statische Text-Snippets. Wenn aktiviert, wird die Vorlage sofort erweitert und lokaler statischer Text eingefügt (unterstützt {{CLIPBOARD}} oder {{DATE}}), ohne KI-Anfragen zu stellen.";
+"app_binding_label" = "Anwendungsbindung (optional)";
+"app_binding_desc" = "Binden Sie diese Aktion an eine bestimmte laufende App. Wenn Sie den Hotkey drücken, prüft die Pipeline die vorderste App und führt die gebundene Aktion aus, mit Rückfall auf global, wenn keine Übereinstimmung gefunden wird.";
+"api_profile_label" = "API-Konfigurationsprofil";
+"api_profile_desc" = "Wählen Sie, welcher API-Endpunkt für die Verarbeitung dieser Aktion verantwortlich ist. Kann das global aktive Profil erben.";
+"global_shortcut_label" = "Globales Tastenkürzel";
+"global_shortcut_desc" = "Drücken Sie Tasten, um ein eindeutiges systemweites Tastenkürzel zuzuweisen. Das Loslassen dieser Tasten löst die Transformation aus.";
+"system_prompt_label" = "System-Prompt";
+"system_prompt_desc" = "Die Persona, der Kontext und die Betriebsregeln der KI (z. B. „Als professioneller Lektor handeln").";
+"user_prompt_template_label" = "Benutzer-Prompt-Vorlage";
+"snippet_content_label" = "Snippet-Textinhalt";
+"prompt_template_desc_ai" = "Die Prompt-Vorlage mit {{TEXT}} (der ausgewählte Textblock), optionalen Tags {{CLIPBOARD}} und {{LANGUAGE}} (dynamische Zielsprache).";
+"prompt_template_desc_snippet" = "Statische Textvorlage zum sofortigen Einfügen. Unterstützt die Platzhalter {{CLIPBOARD}}, {{DATE}} und {{CURRENT_APP}}.";
+"response_suffix_label" = "Antwort-Suffix (optional)";
+"response_suffix_desc" = "Optionaler Textzusatz, der dynamisch an das Ende der KI-Ausgabe vor der Ersetzung angehängt wird.";
+"press_keys_to_record" = "Tasten zum Aufnehmen drücken.";
+"must_include_text_supports_lang" = "Muss {{TEXT}} enthalten (unterstützt {{LANGUAGE}})";
+"supports_clipboard_date_app" = "Unterstützt {{CLIPBOARD}}, {{DATE}}, {{CURRENT_APP}}";
+"appends_text_literally" = "Fügt Text wörtlich an das Ende jeder generierten KI-Antwort an";
+"action_not_found" = "Aktion nicht gefunden";
+"global_application" = "Global (beliebige Anwendung)";
+"inherit_global_active_profile" = "Globales aktives Profil übernehmen (%@)";
+
+/* API Settings */
+"api_config_title" = "API-Konfigurationsprofile";
+"api_config_desc" = "Erstellen und konfigurieren Sie Endpunkte zur Verarbeitung von KI-Transformationen.";
+"profile_name_placeholder" = "Profilname";
+"profile_name_desc" = "Eine benutzerdefinierte Bezeichnung zur Identifikation dieses Profils bei der Auswahl für verschiedene Aktionen.";
+"api_provider_label" = "API-Anbieter";
+"api_provider_desc" = "Wählen Sie die KI-Dienstplattform (z. B. OpenAI, Anthropic, Ollama, DeepSeek) für die Vervollständigungen.";
+"api_base_url_label" = "API-Basis-URL";
+"api_base_url_desc" = "Die Ziel-Endpunkt-URL für die API. Lokale Anbieter verwenden normalerweise http://localhost:11434/v1.";
+"api_key_label" = "API-Schlüssel";
+"api_key_desc" = "Geheimes Token zur Authentifizierung von Anfragen. Sicher im macOS-Schlüsselbund gespeichert.";
+"model_name_label" = "Modellname";
+"model_name_desc" = "Spezifische Modellversion zum Ausführen (z. B. gpt-4o, claude-3-5-sonnet). Suchen oder dynamisch auswählen.";
+"fallback_profile_label" = "Fallback-API-Profil";
+"fallback_profile_desc" = "Wenn eine Netzwerkanfrage oder Verbindung zu diesem Profil fehlschlägt, wechselt die Pipeline sofort zum ausgewählten Fallback-Profil.";
+"connecting_label" = "Verbindung wird hergestellt…";
+"new_profile_title" = "Neues Profil";
+"profile_copy_suffix" = "Kopie";
+"clone_profile_help" = "Profil klonen";
+"delete_profile_help" = "Profil löschen";
+"none_label" = "Keine";
+
+/* Snippets HUD */
+"search_snippets_placeholder" = "Snippets suchen…";
+"no_snippets_found" = "Keine Snippets gefunden";
+"navigate_label" = "Navigieren";
+"paste_label" = "Einfügen";
+
+/* History */
+"history_desc" = "Vergangene Texttransformationen überprüfen, kopieren oder löschen";
+"clear_all_confirm" = "Möchten Sie wirklich den gesamten Transformationsverlauf löschen?";
+"clear_all_warn" = "Alle vergangenen Texttransformationen werden dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.";
+"no_history_yet" = "Noch keine Transformationen";
+"no_matches_found" = "Keine Übereinstimmungen gefunden";
+"no_history_desc" = "Transformieren Sie Text mit Ihren dynamischen Hotkeys, um den Verlauf hier zu sehen.";
+"search_history_placeholder" = "Nach Prompt, Eingabe oder Ausgabe suchen…";
+"copied" = "Kopiert";
+"original_text" = "Originaltext";
+"transformed_output" = "Transformierte Ausgabe";
+
+/* Fix Mode */
+"fix_mode_title" = "Auswahlkorrekturmodus";
+"fix_mode_captured" = "%d Zeichen erfasst";
+"fix_mode_preview" = "AUSWAHLVORSCHAU:";
+"fix_mode_instruction" = "ANWEISUNG:";
+"fix_mode_placeholder" = "z. B. ins Englische übersetzen, prägnanter machen, funktional refaktorieren…";
+"captured_chars" = "%d Zeichen erfasst";

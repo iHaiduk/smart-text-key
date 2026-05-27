@@ -1,48 +1,146 @@
 # 🔮 Smart Text Key
 
 [![Platform](https://img.shields.io/badge/platform-macOS%2014.0%2B-blue.svg)](https://developer.apple.com/macos/)
-[![Swift Version](https://img.shields.io/badge/swift-6.0-orange.svg)](https://swift.org)
-[![Build Status](https://img.shields.io/badge/build-passing-green.svg)]()
+[![Swift](https://img.shields.io/badge/swift-6.0-orange.svg)](https://swift.org)
+[![Version](https://img.shields.io/badge/version-1.4.0-purple.svg)]()
+[![Build](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
 [![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)]()
 
-**Smart Text Key** is a premium, ultra-fast, background-only macOS utility that brings local and cloud LLM intelligence directly into any text editing area on your system. By pressing customizable global hotkeys, it captures the selected text, streams it through an AI engine (like Ollama, OpenAI, DeepSeek, or Anthropic), pastes the optimized results instantly, and cleanly restores your clipboard.
+**Smart Text Key** is a premium, ultra-fast, background-only macOS menu bar utility that brings local and cloud LLM intelligence directly into any text editing area on your system. Press a global hotkey → AI transforms your selected text → result pastes back in-place. Zero friction. Zero context switch.
 
-Designed for developers, writers, and power users who want friction-free AI integrations without heavy dependencies, context switches, or recurring authorization prompts.
+Designed for developers, writers, and power users who want seamless AI integration without heavy apps, browser tabs, or recurring authorization prompts.
 
-## 🗺️ Quick Map
+---
+
+## 🗺️ Table of Contents
 
 - [✨ Features](#-features)
-- [💻 Tech Stack & Design](#-tech-stack--design)
+- [🆕 What's New in v1.4.0](#-whats-new-in-v140)
+- [💻 Tech Stack](#-tech-stack)
 - [🚀 Getting Started](#-getting-started)
 - [📖 How to Use](#-how-to-use)
-- [Troubleshooting](#troubleshooting)
+- [🌍 Supported Languages](#-supported-languages)
 - [🔒 Security & Privacy](#-security--privacy)
+- [Troubleshooting](#troubleshooting)
 - [📄 License](#-license)
 
 ---
 
 ## ✨ Features
 
-- **🚀 Direct In-Place Transformation**: Select any text in any macOS application (Xcode, Slack, VS Code, Browser), press your custom hotkey, and watch it transform in-place.
-- **⚡ Dynamic SSE Token Streaming**: Character-by-character real-time streaming inside an elegant interactive popover with live token counting.
-- **🎨 Accent Customization & HUD Themes**: Re-color selection rings, progress HUDs, and popover buttons using vibrant HSL-tailored colors (Blue, Emerald, Amber, Graphite, and Purple). Segmented support for System/Light/Dark OSD styles.
-- **📂 SQLite-Backed History**: Local SQLite database storing your complete input/output transformation history. Fully searchable in real time with quick-copy, delete, and purge controls.
-- **🔒 ssh-Grade Keychain Security**: Saves sensitive API credentials inside Apple’s native Keychain Services with automatic background UserDefaults migration.
-- **🧩 Provider-Aware AI Routing**: Choose OpenAI-compatible APIs, native Ollama, Anthropic, or DeepSeek per profile, each with provider-specific request and streaming support.
-- **🛠️ Automated API Failovers**: Attach secondary backup profiles to any API profile. If your primary Ollama or OpenAI server goes offline, the request automatically redirects to your fallback route.
-- **🔊 Premium Sound Feedback**: Native sound cues utilizing macOS AppKit `NSSound` alerts. Plays `"Purr"` on capture, `"Glass"` on completion, and `"Basso"` on failovers or errors.
-- **🔍 Smart Fallback Selection**: If you press a hotkey with an active text selection, only that selected text is processed and replaced. If no text is selected, the tool automatically falls back to selecting and replacing the entire active document content (using `Cmd+A`).
-- **🧬 Auto-Discovery Combobox Picker**: A custom editable dropdown list that queries standard `/v1/models` and native Ollama `/api/tags` endpoints in the background, updating suggestions as you type.
+### ⚡ Core Pipeline
+
+- **In-Place Text Transformation** — Select any text in any macOS app (Xcode, VS Code, Slack, Safari, Terminal), press your hotkey, watch it transform instantly.
+- **Real-Time SSE Streaming** — Token-by-token AI streaming inside a glassmorphism popover with live character counting.
+- **Multi-Provider AI Routing** — OpenAI, Anthropic, Ollama (local), DeepSeek, or any OpenAI-compatible endpoint — per-action granularity.
+- **Automated API Failover** — Attach a fallback profile to any primary API config. If the primary goes offline, the pipeline silently retries on the backup.
+- **Escape to Cancel** — Press `⎋ Esc` at any time during streaming to instantly cancel the active generation task.
+- **Smart Selection Fallback** — No selection? The pipeline auto-selects the entire document (`⌘A`) as input and replaces it cleanly.
+
+### 🎛️ Actions System
+
+- **Unlimited Custom Actions** — Create any number of AI actions, each with its own system prompt, user template, API profile, and global hotkey.
+- **Text Snippets** — Mark any action as a static "Snippet" — it instantly pastes local text (supports `{{CLIPBOARD}}`, `{{DATE}}`, `{{CURRENT_APP}}` placeholders) with no AI request.
+- **Per-App Action Binding** — Bind an action to a specific macOS application. The pipeline checks the frontmost app and runs the most specific matching action, falling back to the global variant.
+- **Dynamic Template Variables** — Templates support `{{TEXT}}`, `{{CLIPBOARD}}`, `{{DATE}}`, `{{CURRENT_APP}}`, and `{{LANGUAGE}}` (injects the active app language for multilingual workflows).
+- **Response Suffix** — Append a static text literal to the end of any AI response (e.g. citations, line separators, signatures).
+
+### 🔍 Interactive HUD Overlays
+
+- **Preview Popover** — A floating glassmorphism overlay shows the AI response streaming in real-time with Paste / Copy / Regenerate / Discard controls.
+- **Snippets Quick-Insert HUD** — Global hotkey summons a full-featured search overlay (arrow-key navigation, instant paste on `↩ Enter`, `⎋ Esc` to dismiss).
+- **Interactive Fix Mode** — Dedicated hotkey captures your selection and opens a multiline instruction input overlay. Type what you want fixed, press `↩ Enter`, AI applies it. (`⇧ Shift + ↩` or `⌥ Option + ↩` inserts a newline).
+
+### 🎨 Interface & Customization
+
+- **5 Accent Colors** — Blue, Emerald, Amber, Graphite, Purple — dynamically re-colors selection rings, active borders, and all interactive elements.
+- **System / Light / Dark Theme** — Independently control the HUD overlay appearance mode separately from macOS system preference.
+- **Real-Time Language Switching** — Switch the entire app interface language instantly without restart (14 languages supported).
+- **Launch at Login** — Registers via `SMAppService` to auto-start in the menu bar on boot.
+- **Sound Feedback** — Plays native macOS sound cues (`Purr` on capture, `Glass` on success, `Basso` on error/fallback).
+
+### 📊 History
+
+- **SQLite-Backed History Log** — Every transformation is logged to a local SQLite database with prompt, original input, AI output, and timestamp.
+- **Full-Text Search** — Search history instantly across prompt name, original text, and output.
+- **Copy / Delete / Purge** — One-click copy of original or transformed text. Delete individual entries or purge all.
+
+### 🔐 Security
+
+- **Keychain Storage** — API keys are stored in macOS Keychain with owner-only access control — never in plaintext UserDefaults.
+- **Zero Cloud Leakage** — Local (Ollama) profiles communicate exclusively with your localhost. No third-party telemetry.
+- **Clipboard Preservation** — Original clipboard contents are captured before any operation and cleanly restored after paste.
 
 ---
 
-## 💻 Tech Stack & Design
+## 🆕 What's New in v1.4.0
 
-1. **Platform Target**: Native macOS 14.0+ (compiled natively for Apple Silicon and Intel targets).
-2. **Frameworks**: 100% native Swift/SwiftUI, AppKit integrations for window and menu controls, and Carbon APIs for keyboard event simulation.
-3. **Strict Concurrency**: Fully compliant with **Swift 6 strict concurrency checks** (100% warning-free).
-4. **Zero-Dependency Core**: Standard SQLite3 libraries and native Security APIs are wrapped directly, keeping dependencies lightweight (relying only on `KeyboardShortcuts` for global hotkey registering).
-5. **Aesthetics**: Glassmorphism (`NSVisualEffectView`), smooth micro-animations, and dynamic visual rings aligned with Apple's human interface guidelines.
+### 🌍 Real-Time Multilingual UI (14 Languages)
+The entire application interface now supports **14 languages** with instant real-time switching — no restart required:
+
+| Language | Code | Language | Code |
+|---|---|---|---|
+| 🇺🇸 English | `en` | 🇯🇵 Japanese | `ja` |
+| 🇷🇺 Russian | `ru` | 🇰🇷 Korean | `ko` |
+| 🇺🇦 Ukrainian | `uk` | 🇻🇳 Vietnamese | `vi` |
+| 🇨🇳 Chinese | `zh` | 🇸🇦 Arabic | `ar` |
+| 🇪🇸 Spanish | `es` | 🇮🇳 Hindi | `hi` |
+| 🇫🇷 French | `fr` | 🇩🇪 German | `de` |
+| 🇮🇹 Italian | `it` | 🇵🇹 Portuguese | `pt` |
+
+Switch language in **General Settings → App Language** and every label, button, placeholder, section header, and HUD overlay updates instantly.
+
+### 🔧 Fix Mode — Multiline Instruction Overlay
+A dedicated new global hotkey triggers the **Interactive Fix Mode**:
+1. Press the Fix Mode hotkey
+2. The app captures your current text selection
+3. A floating HUD overlay appears with a multiline `TextEditor` for your instruction
+4. Type your instruction (e.g. *"translate to English, make it concise"*)
+5. Press `↩ Enter` to run — `⇧ Shift + ↩` inserts a newline
+6. AI applies your instruction and pastes the result back in-place
+
+### 📌 Snippets Quick-Insert HUD
+A brand-new dedicated hotkey summons a full-featured **Snippets Search overlay**:
+- Arrow-key navigation through all your configured text snippets
+- Instant full-text search
+- `↩ Enter` to paste the selected snippet
+- `⎋ Esc` to dismiss without action
+
+### 🏗️ Architecture Hardening
+- **Provider Isolation** — `OpenAIProvider`, `AnthropicProvider`, `OllamaProvider` are now fully separated into individual provider files with injected `URLSession` (testable, mockable).
+- **`TransformationPipeline`** — All capture → process → paste logic is centralized in a dedicated pipeline class with full failover and cancellation support.
+- **`AIProviderClientFactory`** — Clean factory pattern replaces the monolithic `AIService` switch block.
+- **`nonisolated(unsafe)` eliminated** — `URLSession` is injected via `init`, not stored as an unsafe nonisolated property.
+- **Redundant saves eliminated** — `promptActions.didSet` is the single source of truth for persistence + shortcut re-registration. No more double-save from observers.
+- **`runningApps` cached** — Application binding picker no longer recomputes the running app list on every SwiftUI render pass.
+- **Localization migrated to `.strings` files** — Replaced a 578-line in-memory dictionary with standard Apple `*.lproj/Localizable.strings` resource files loaded via `Bundle.module`. Adding a new language now requires only a new `.lproj` folder.
+
+### 🧪 Expanded Test Suite
+17 unit and integration tests now cover:
+- SQLite history persistence (`:memory:` isolation)
+- Keychain round-trip (save / read / delete)
+- OpenAI streaming chunk assembly and response parsing
+- Ollama base URL normalization and completion
+- Anthropic SSE delta decoding
+- `AIService` thinking-block stripping (`<think>`, `<thought>`)
+- Per-app action shortcut resolution
+- Pipeline fallback, snippet expansion, and empty-response guard
+
+---
+
+## 💻 Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Language | Swift 6.0 (strict concurrency, `Sendable`, `@MainActor`) |
+| UI | SwiftUI + AppKit (glassmorphism overlays, `NSVisualEffectView`) |
+| Concurrency | Swift structured concurrency (`async/await`, `Task`, `AsyncBytes`) |
+| Database | Native SQLite3 (no ORM) |
+| Keychain | Security framework (`SecItemAdd`, `SecItemCopyMatching`, `SecItemDelete`) |
+| Hotkeys | [`KeyboardShortcuts`](https://github.com/sindresorhus/KeyboardShortcuts) |
+| Localization | Standard Apple `.strings` files via `Bundle.module` |
+| Packaging | Swift Package Manager (SPM) |
+| CI/CD | GitHub Actions → DMG artifact on every push |
 
 ---
 
@@ -50,116 +148,157 @@ Designed for developers, writers, and power users who want friction-free AI inte
 
 ### Prerequisites
 
-- macOS 14.0 or newer.
-- Xcode 15.0+ or Swift Toolchain 6.0+.
+- macOS 14.0 (Sonoma) or newer
+- Xcode 15.0+ **or** Swift Toolchain 6.0+
 
 ### 📥 Quick Install (DMG)
 
-On every release, an automated GitHub Actions pipeline compiles and packages the app natively into a drag-and-drop installer:
-1. Go to the **GitHub Actions** tab or **Releases** of the repository.
-2. Download the `SmartTextKey-Installer-DMG` artifact.
-3. Open `SmartTextKey.dmg`, drag the **Smart Text Key** icon into your **Applications** folder, and launch!
+Every push to `main` triggers an automated GitHub Actions build:
+
+1. Go to the **Releases** tab of this repository.
+2. Download `SmartTextKey.dmg`.
+3. Open the DMG, drag **Smart Text Key** into **Applications**, and launch.
 
 > [!IMPORTANT]
-> **macOS Security & Gatekeeper Note:**  
-> Since releases or local builds may not be signed/notarized with an Apple Developer Account, macOS might block the app on first launch, showing a warning that the app cannot be opened or verified.  
->   
-> **To allow running the app:**  
-> 1. Open **System Settings** (Системные настройки) on your Mac.  
-> 2. Navigate to **Privacy & Security** (Конфиденциальность и безопасность).  
-> 3. Scroll down to the *Security* section. You will see a message stating that *"SmartTextKey" was blocked*.  
-> 4. Click **Open Anyway** (Разрешить в любом случае) and enter your system password to confirm.  
->   
-> Alternatively, you can clear the quarantine attribute using Terminal:  
+> **macOS Gatekeeper Notice:**
+> Since the app is not signed/notarized with an Apple Developer certificate, macOS may block the first launch.
+>
+> **To allow it:**
+> 1. Open **System Settings → Privacy & Security**
+> 2. Scroll to the *Security* section and click **Open Anyway**
+>
+> Or via Terminal:
 > ```bash
 > xattr -dr com.apple.quarantine /Applications/SmartTextKey.app
 > ```
 
-### Building & Compilation Local
-
-If you want to package a custom DMG locally, we provide a unified packaging script:
-```bash
-./scripts/package_dmg.sh
-```
-This automatically compiles the source code in release mode, generates the high-quality multi-resolution `.icns` files natively, sets the accessory plist attributes, and outputs the UDZO compressed installer at `SmartTextKey.dmg`.
-
-Or compile manually using the Swift Package Manager:
+### 🔨 Build from Source
 
 ```bash
-git clone https://github.com/your-username/smart-text-key.git
+git clone https://github.com/iHaiduk/smart-text-key.git
 cd smart-text-key
 swift build -c release
 ```
 
-The compiled binary will be available under `.build/release/SmartTextKey`.
+The compiled binary: `.build/release/SmartTextKey`
 
-### Running Unit Tests
+To produce a packaged DMG locally:
 
-The test suite validates database history persistence, Keychain cryptographic storage, and model operations without touching user production files (isolating database tests using `:memory:` bounds):
+```bash
+./scripts/package_dmg.sh
+```
+
+### 🧪 Run Tests
 
 ```bash
 swift test
 ```
 
+17 tests covering history, keychain, AI providers, pipeline, and snippet logic.
+
 ---
 
 ## 📖 How to Use
 
-### 1. Initial Launch
-Upon initial launch, the application registers as an **accessory utility** (running purely in the background without a Dock icon) and opens the **Settings Panel** automatically. A `"character.bubble"` icon will appear in your macOS status bar.
+### 1. First Launch
 
-### 2. Configure API Settings
-In the **API Settings** tab:
-- Add a profile (e.g., Local Ollama, OpenAI, or DeepSeek).
-- Enter your **API Base URL** and **API Key** (use the eye toggle to reveal/hide).
-- Focus on the **Model Name** to dynamically query active models directly from your server!
-- Configure an optional **Fallback API Profile** for failover backup support.
+The app registers as a **background accessory** (no Dock icon) and opens the Settings panel automatically. A `🔮` icon appears in your menu bar.
 
-### 3. Create & Bind Actions
-In the **AI Actions** list:
-- Click **"Add Action"** to create a custom template.
-- Specify your **System Prompt** (e.g., "You are an expert translator...") and **User Template** (must include `{{TEXT}}` placeholder, and can contain `{{CLIPBOARD}}`, `{{DATE}}`, or `{{CURRENT_APP}}` tags).
-- Bind a dedicated **API Profile** or let it inherit the global active one.
-- Record a global hotkey shortcut by clicking the key recorder.
+### 2. Configure API
 
-### 4. Interactive HUD Popover
-If **"Show Preview Popover"** is enabled, pressing the hotkey pops up an elegant popover showing the AI response streaming in real time. Use keycaps or click buttons to:
-- `↩ Enter` (or Paste): Pastes the result directly into your active cursor.
-- `⌘C` (or Copy): Copies the text to the clipboard.
-- `⌘R` (or Regenerate): Clears and restarts the AI generation loop.
-- `⎋ Esc` (or Discard): Safely cancels the active thread and restores your original clipboard.
+Open **Settings → API Settings**:
+
+- Click **Add Profile** to create an API endpoint
+- Enter your **Base URL** (e.g. `http://localhost:11434/v1` for Ollama, or `https://api.openai.com/v1`)
+- Enter your **API Key** (stored securely in macOS Keychain)
+- Focus the **Model Name** field to auto-fetch available models from your server
+- Optionally attach a **Fallback Profile** for automatic failover
+
+### 3. Create Actions
+
+Open **Settings → AI Actions** and click **Add Action**:
+
+| Field | Description |
+|---|---|
+| **Title** | Label shown in HUDs and the sidebar |
+| **Is Text Snippet** | When on: pastes static text instantly, no AI call |
+| **App Binding** | Optional: restrict action to a specific running app |
+| **API Profile** | Choose a specific profile or inherit the global active one |
+| **Global Shortcut** | Record a system-wide hotkey |
+| **System Prompt** | AI persona and rules |
+| **User Prompt Template** | Must include `{{TEXT}}`; supports `{{CLIPBOARD}}`, `{{DATE}}`, `{{CURRENT_APP}}`, `{{LANGUAGE}}` |
+| **Response Suffix** | Static text appended to every AI response |
+
+### 4. Use Your Hotkeys
+
+| Action | How |
+|---|---|
+| **AI Transform** | Select text → press your action hotkey → AI transforms in-place |
+| **Snippets Search** | Press Snippets hotkey → arrow-key navigate → `↩` to paste |
+| **Fix Mode** | Press Fix Mode hotkey → type instruction → `↩` to apply |
+| **Cancel streaming** | Press `⎋ Esc` at any time |
+
+### 5. Preview Popover (Optional)
+
+Enable **Show Preview Popover** to review the AI output before pasting:
+
+| Key | Action |
+|---|---|
+| `↩ Enter` | Paste result at cursor |
+| `⌘C` | Copy to clipboard |
+| `⌘R` | Regenerate (restart AI call) |
+| `⎋ Esc` | Discard and restore original clipboard |
 
 ---
 
-## Troubleshooting
+## 🌍 Supported Languages
 
-### “SmartTextKey” is damaged and can’t be opened
+Switch the UI language in **General Settings → App Language**. Changes apply instantly across all views, overlays, and HUDs:
 
-If you downloaded a GitHub release DMG and macOS shows this message, the build was packaged without Apple code signing and notarization. The app contents are not necessarily corrupted, but Gatekeeper blocks the launch.
+- 🇺🇸 English · 🇷🇺 Russian · 🇺🇦 Ukrainian · 🇨🇳 Chinese · 🇻🇳 Vietnamese
+- 🇪🇸 Spanish · 🇫🇷 French · 🇩🇪 German · 🇮🇹 Italian · 🇵🇹 Portuguese
+- 🇯🇵 Japanese · 🇰🇷 Korean · 🇸🇦 Arabic · 🇮🇳 Hindi
 
-Local workaround for a trusted build:
-
-```bash
-xattr -dr com.apple.quarantine /Applications/SmartTextKey.app
-```
-
-Permanent release-side fix:
-
-1. Configure `CODE_SIGN_IDENTITY` in GitHub Actions secrets.
-2. Configure `NOTARY_PROFILE` in GitHub Actions secrets.
-3. Rebuild and republish the DMG so the app is signed and notarized.
+The app also reads your macOS system locale by default (`System Language` option), so if your system is in Russian, the UI starts in Russian automatically.
 
 ---
 
 ## 🔒 Security & Privacy
 
-Smart Text Key values your security and privacy above all:
-- **Zero Cloud Leakage**: Local profiles (e.g. Ollama) communicate directly with your localhost port (`11434`) and send nothing to third-party endpoints.
-- **SSH-Grade Lockdowns**: Secure Keychain keys are locked with owner-only access. In-app plist files store only empty tokens.
-- **Clipboard Preservation**: Captured select bounds and original clipboard contents are held in-memory and cleanly restored immediately after pastes, ensuring no data loss.
+- **API keys** are stored in macOS Keychain with `kSecAttrAccessible` owner-only policy — never in `UserDefaults` or plain files.
+- **Local-only** Ollama profiles talk exclusively to your `localhost` — no data leaves your machine.
+- **Clipboard preservation** — the original clipboard is snapshotted before any operation and restored immediately after the paste, leaving no residual data.
+- **No telemetry** — the app makes zero analytics or tracking requests. It only calls the API endpoints you explicitly configure.
+
+---
+
+## Troubleshooting
+
+### "SmartTextKey is damaged and can't be opened"
+
+The build is not signed/notarized. Clear Gatekeeper quarantine:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/SmartTextKey.app
+```
+
+### Hotkey doesn't trigger
+
+Make sure **Accessibility permissions** are granted:  
+**System Settings → Privacy & Security → Accessibility** → enable Smart Text Key.
+
+### Text doesn't get replaced
+
+- Ensure the target app supports standard macOS `NSPasteboard` paste operations.
+- Some sandboxed apps or password fields block programmatic paste — this is a macOS security limitation.
+
+### No models appear in the model picker
+
+- For Ollama: confirm the server is running (`ollama serve`) and accessible at the configured base URL.
+- For OpenAI/cloud: ensure your API key is valid and the base URL matches the provider's endpoint.
 
 ---
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License — see [LICENSE](LICENSE) for details.

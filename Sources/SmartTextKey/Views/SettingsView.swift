@@ -3,9 +3,10 @@ import Observation
 
 public struct SettingsView: View {
     @Bindable private var settings = AppSettings.shared
-    @State private var selectedTab: Selection = .apiSettings
+    @State private var selectedTab: Selection = .generalSettings
 
     enum Selection: Hashable {
+        case generalSettings
         case apiSettings
         case history
         case action(UUID)
@@ -34,14 +35,22 @@ public struct SettingsView: View {
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("GLOBAL")
+                        Text(settings.localized("global_section"))
                             .font(.system(size: 9, weight: .semibold))
                             .foregroundStyle(.secondary)
                             .padding(.horizontal, 16)
                             .padding(.top, 8)
 
                         SidebarRow(
-                            title: "API Settings",
+                            title: settings.localized("general_settings_title"),
+                            systemImage: "gearshape",
+                            isSelected: selectedTab == .generalSettings
+                        ) {
+                            selectedTab = .generalSettings
+                        }
+
+                        SidebarRow(
+                            title: settings.localized("api_settings_title"),
                             systemImage: "network",
                             isSelected: selectedTab == .apiSettings
                         ) {
@@ -49,7 +58,7 @@ public struct SettingsView: View {
                         }
 
                         SidebarRow(
-                            title: "History",
+                            title: settings.localized("history_title"),
                             systemImage: "clock",
                             isSelected: selectedTab == .history
                         ) {
@@ -57,7 +66,7 @@ public struct SettingsView: View {
                         }
 
                         HStack {
-                            Text("AI ACTIONS")
+                            Text(settings.localized("ai_actions_section"))
                                 .font(.system(size: 9, weight: .semibold))
                                 .foregroundStyle(.secondary)
                             Spacer()
@@ -67,9 +76,10 @@ public struct SettingsView: View {
 
                         ForEach(settings.promptActions) { action in
                             SidebarRow(
-                                title: action.title.isEmpty ? "Untitled Action" : action.title,
-                                systemImage: "sparkles",
-                                isSelected: selectedTab == .action(action.id)
+                                title: action.title.isEmpty ? settings.localized("untitled_action") : action.title,
+                                systemImage: action.isSnippet ? "doc.text.fill" : "sparkles",
+                                isSelected: selectedTab == .action(action.id),
+                                badgeText: action.isSnippet ? "Snippet" : nil
                             ) {
                                 selectedTab = .action(action.id)
                             }
@@ -83,7 +93,7 @@ public struct SettingsView: View {
                 Button(action: addNewAction) {
                     HStack {
                         Image(systemName: "plus.circle.fill")
-                        Text("Add Action")
+                        Text(settings.localized("add_action_button"))
                             .font(.system(size: 13, weight: .medium))
                     }
                     .frame(maxWidth: .infinity)
@@ -103,6 +113,8 @@ public struct SettingsView: View {
 
             VStack {
                 switch selectedTab {
+                case .generalSettings:
+                    GeneralSettingsView(settings: settings)
                 case .apiSettings:
                     ApiSettingsView(settings: settings)
                 case .history:
@@ -133,7 +145,7 @@ public struct SettingsView: View {
         let uniqueId = UUID()
         let newAction = PromptAction(
             id: uniqueId,
-            title: "New Action",
+            title: settings.localized("new_action_title"),
             systemPrompt: "You are a helpful assistant.",
             template: "Analyze the following:\n\n{{TEXT}}",
             shortcutId: "shortcut_\(uniqueId.uuidString.replacingOccurrences(of: "-", with: "_"))"
@@ -147,6 +159,7 @@ struct SidebarRow: View {
     let title: String
     let systemImage: String
     let isSelected: Bool
+    var badgeText: String? = nil
     let action: () -> Void
 
     @State private var isHovered = false
@@ -161,7 +174,18 @@ struct SidebarRow: View {
                 Text(title)
                     .font(.system(size: 13, weight: isSelected ? .medium : .regular))
                     .lineLimit(1)
+                
                 Spacer()
+
+                if let badgeText {
+                    Text(badgeText)
+                        .font(.system(size: 9, weight: .bold, design: .rounded))
+                        .foregroundStyle(isSelected ? themeAccentColor : .white)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(isSelected ? Color.white : themeAccentColor.opacity(0.85))
+                        .cornerRadius(4)
+                }
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 8)

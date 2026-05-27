@@ -32,7 +32,7 @@ public final class HistoryManager: HistoryStoreProtocol {
         } else {
             guard let appSupportURL = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
                 let errorMsg = "Failed to get Application Support directory."
-                print("Smart Text Key [HistoryManager]: \(errorMsg)")
+                AppLogger.history.error("\(errorMsg)")
                 self.databaseError = errorMsg
                 return
             }
@@ -42,7 +42,7 @@ public final class HistoryManager: HistoryStoreProtocol {
                 try FileManager.default.createDirectory(at: dbDirectory, withIntermediateDirectories: true, attributes: nil)
             } catch {
                 let errorMsg = "Failed to create database directory: \(error.localizedDescription)"
-                print("Smart Text Key [HistoryManager]: \(errorMsg)")
+                AppLogger.history.error("\(errorMsg)")
                 self.databaseError = errorMsg
                 return
             }
@@ -52,11 +52,11 @@ public final class HistoryManager: HistoryStoreProtocol {
         }
         
         if sqlite3_open(dbPath, &db) == SQLITE_OK {
-            print("Smart Text Key [HistoryManager]: SQLite database opened successfully at \(dbPath)")
+            AppLogger.history.log("SQLite database opened successfully at \(dbPath)")
             createTable()
         } else {
             let errorMsg = "Failed to open SQLite database at \(dbPath)."
-            print("Smart Text Key [HistoryManager]: \(errorMsg)")
+            AppLogger.history.error("\(errorMsg)")
             self.databaseError = errorMsg
             if let db = db {
                 sqlite3_close(db)
@@ -79,7 +79,7 @@ public final class HistoryManager: HistoryStoreProtocol {
         var errorPointer: UnsafeMutablePointer<Int8>?
         if sqlite3_exec(db, createTableSQL, nil, nil, &errorPointer) != SQLITE_OK {
             let errorMsg = errorPointer.map { String(cString: $0) } ?? "Unknown error"
-            print("Smart Text Key [HistoryManager]: Failed to create table: \(errorMsg)")
+            AppLogger.history.error("Failed to create table: \(errorMsg)")
             self.databaseError = "Failed to create table: \(errorMsg)"
             if let errorPointer = errorPointer {
                 sqlite3_free(errorPointer)
@@ -92,7 +92,7 @@ public final class HistoryManager: HistoryStoreProtocol {
         if status != SQLITE_OK {
             let errorMsg = alterErrorPointer.map { String(cString: $0) } ?? "Unknown error"
             if !errorMsg.contains("duplicate column name") {
-                print("Smart Text Key [HistoryManager]: Failed to alter table: \(errorMsg)")
+                AppLogger.history.error("Failed to alter table: \(errorMsg)")
                 self.databaseError = "Failed to migrate database schema: \(errorMsg)"
             }
             if let alterErrorPointer = alterErrorPointer {
@@ -120,14 +120,14 @@ public final class HistoryManager: HistoryStoreProtocol {
             sqlite3_bind_text(statement, 5, (modelName as NSString).utf8String, -1, nil)
             
             if sqlite3_step(statement) == SQLITE_DONE {
-                print("Smart Text Key [HistoryManager]: Successfully logged transformation.")
+                AppLogger.history.log("Successfully logged transformation.")
             } else {
                 let errorMsg = String(cString: sqlite3_errmsg(db))
-                print("Smart Text Key [HistoryManager]: Failed to insert row: \(errorMsg)")
+                AppLogger.history.error("Failed to insert row: \(errorMsg)")
             }
         } else {
             let errorMsg = String(cString: sqlite3_errmsg(db))
-            print("Smart Text Key [HistoryManager]: Failed to prepare insert statement: \(errorMsg)")
+            AppLogger.history.error("Failed to prepare insert statement: \(errorMsg)")
         }
         
         sqlite3_finalize(statement)
@@ -190,7 +190,7 @@ public final class HistoryManager: HistoryStoreProtocol {
             }
         } else {
             let errorMsg = String(cString: sqlite3_errmsg(db))
-            print("Smart Text Key [HistoryManager]: Failed to prepare select statement: \(errorMsg)")
+            AppLogger.history.error("Failed to prepare select statement: \(errorMsg)")
         }
         
         sqlite3_finalize(statement)
@@ -207,14 +207,14 @@ public final class HistoryManager: HistoryStoreProtocol {
             sqlite3_bind_int64(statement, 1, id)
             
             if sqlite3_step(statement) == SQLITE_DONE {
-                print("Smart Text Key [HistoryManager]: Successfully deleted history item: \(id)")
+                AppLogger.history.log("Successfully deleted history item: \(id)")
             } else {
                 let errorMsg = String(cString: sqlite3_errmsg(db))
-                print("Smart Text Key [HistoryManager]: Failed to delete row: \(errorMsg)")
+                AppLogger.history.error("Failed to delete row: \(errorMsg)")
             }
         } else {
             let errorMsg = String(cString: sqlite3_errmsg(db))
-            print("Smart Text Key [HistoryManager]: Failed to prepare delete statement: \(errorMsg)")
+            AppLogger.history.error("Failed to prepare delete statement: \(errorMsg)")
         }
         
         sqlite3_finalize(statement)
@@ -227,10 +227,10 @@ public final class HistoryManager: HistoryStoreProtocol {
         
         var errorPointer: UnsafeMutablePointer<Int8>?
         if sqlite3_exec(db, clearSQL, nil, nil, &errorPointer) == SQLITE_OK {
-            print("Smart Text Key [HistoryManager]: Successfully cleared all transformation history.")
+            AppLogger.history.log("Successfully cleared all transformation history.")
         } else {
             let errorMsg = errorPointer.map { String(cString: $0) } ?? "Unknown error"
-            print("Smart Text Key [HistoryManager]: Failed to clear history: \(errorMsg)")
+            AppLogger.history.error("Failed to clear history: \(errorMsg)")
             if let errorPointer = errorPointer {
                 sqlite3_free(errorPointer)
             }

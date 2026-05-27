@@ -1,0 +1,126 @@
+/* Smart Text Key — English Localizable Strings */
+
+/* Sidebar / Navigation */
+"general_settings_title" = "General Settings";
+"api_settings_title" = "API Settings";
+"history_title" = "History";
+"global_section" = "GLOBAL";
+"ai_actions_section" = "AI ACTIONS";
+
+/* Buttons */
+"add_action_button" = "Add Action";
+"delete_button" = "Delete";
+"cancel_button" = "Cancel";
+"apply_fix_button" = "Apply Fix";
+"add_profile_button" = "Add Profile";
+"test_connection_button" = "Test Connection";
+"clear_all_button" = "Clear All";
+
+/* General Settings */
+"show_preview_popover" = "Show Preview Popover";
+"show_preview_popover_desc" = "Review, edit, or copy the AI response in a floating popover before it replaces your highlighted text. If disabled, text is replaced instantly.";
+"accent_color" = "Accent Color";
+"accent_color_desc" = "Change UI highlights, active borders, and buttons dynamically.";
+"hud_theme" = "HUD OSD Theme";
+"hud_theme_desc" = "Choose color mode appearance for the system HUD and floating panels.";
+"sound_effects" = "Enable Sound Effects";
+"sound_effects_desc" = "Play soft sound effects on pipeline start, success, and error states.";
+"launch_at_login" = "Launch at Login";
+"launch_at_login_desc" = "Automatically start Smart Text Key in the menu bar when your Mac boots.";
+"snippets_search_hotkey" = "Snippets Quick Insert";
+"snippets_search_hotkey_desc" = "Global hotkey to summon the search HUD for Arrow-key navigation and pasting.";
+"fix_mode_hotkey" = "Interactive Fix Mode";
+"fix_mode_hotkey_desc" = "Global hotkey to capture selection and display the typed instruction overlay.";
+"target_language" = "App Language";
+"target_language_desc" = "Select the active language used for the user interface and default AI transformations.";
+
+/* Sections */
+"behavior_section" = "BEHAVIOR";
+"interface_section" = "INTERFACE & STYLING";
+"system_preferences_section" = "SYSTEM PREFERENCES";
+"hotkeys_section" = "SYSTEM GLOBAL HOTKEYS";
+
+/* Theme Options */
+"theme_system" = "System";
+"theme_light" = "Light";
+"theme_dark" = "Dark";
+"system_language_default" = "System Language (Default)";
+
+/* Action Editor */
+"new_action_title" = "New Action";
+"untitled_action" = "Untitled Action";
+"edit_action_title" = "Edit Action";
+"action_title_label" = "Action Title";
+"action_title_placeholder" = "e.g. Refactor, Translate to Russian";
+"action_title_desc" = "Name shown in HUD overlays and lists (e.g. 'Summarize', 'Fix Grammar').";
+"is_snippet_label" = "Is Text Snippet";
+"is_snippet_desc" = "Toggle static text snippets. When enabled, the template expands instantly and pastes local static text (supporting {{CLIPBOARD}} or {{DATE}}) without making any AI requests.";
+"app_binding_label" = "Application Binding (Optional)";
+"app_binding_desc" = "Bind this action to a specific running app. When you press the hotkey, the pipeline checks the frontmost app and runs the bound action, falling back to global if no match is found.";
+"api_profile_label" = "API Configuration Profile";
+"api_profile_desc" = "Choose which API endpoint is responsible for processing this action. Can inherit the globally active profile.";
+"global_shortcut_label" = "Global Shortcut";
+"global_shortcut_desc" = "Press keys to assign a unique system-wide shortcut. Releasing these keys triggers the transformation.";
+"system_prompt_label" = "System Prompt";
+"system_prompt_desc" = "The AI's persona, context, and operational rules (e.g. 'Act as a professional copyeditor').";
+"user_prompt_template_label" = "User Prompt Template";
+"snippet_content_label" = "Snippet Text Content";
+"prompt_template_desc_ai" = "The prompt template containing {{TEXT}} (the selected text block), optional {{CLIPBOARD}} and {{LANGUAGE}} (dynamic target language) tags.";
+"prompt_template_desc_snippet" = "Static text template to be pasted instantly. Supports {{CLIPBOARD}}, {{DATE}}, and {{CURRENT_APP}} placeholders.";
+"response_suffix_label" = "Response Suffix (Optional)";
+"response_suffix_desc" = "Optional text literal dynamically appended to the end of the AI output before replacement (e.g. a citation or spacer).";
+"press_keys_to_record" = "Press keys to record.";
+"must_include_text_supports_lang" = "Must include {{TEXT}} (supports {{LANGUAGE}})";
+"supports_clipboard_date_app" = "Supports {{CLIPBOARD}}, {{DATE}}, {{CURRENT_APP}}";
+"appends_text_literally" = "Appends text literally to the end of any generated AI response";
+"action_not_found" = "Action Not Found";
+"global_application" = "Global (Any Application)";
+"inherit_global_active_profile" = "Inherit Global Active Profile (%@)";
+
+/* API Settings */
+"api_config_title" = "API Configuration Profiles";
+"api_config_desc" = "Create and configure endpoints to process AI transformations.";
+"profile_name_placeholder" = "Profile Name";
+"profile_name_desc" = "A custom label to identify this profile when choosing it for different Actions.";
+"api_provider_label" = "API Provider";
+"api_provider_desc" = "Choose the AI service platform (e.g. OpenAI, Anthropic, Ollama, DeepSeek) to handle completions.";
+"api_base_url_label" = "API Base URL";
+"api_base_url_desc" = "The target endpoint URL for the API. Local providers usually use http://localhost:11434/v1.";
+"api_key_label" = "API Key";
+"api_key_desc" = "Secret token used to authenticate requests. Saved securely in macOS Keychain. Local services can leave this blank.";
+"model_name_label" = "Model Name";
+"model_name_desc" = "Specific model version to run (e.g. gpt-4o, claude-3-5-sonnet, deepseek-coder, llama3). Search or choose dynamically.";
+"fallback_profile_label" = "Fallback API Profile";
+"fallback_profile_desc" = "If a network request or connection to this profile fails, the pipeline will instantly failover to the selected fallback profile to complete the action without interruption.";
+"connecting_label" = "Connecting...";
+"new_profile_title" = "New Profile";
+"profile_copy_suffix" = "Copy";
+"clone_profile_help" = "Clone Profile";
+"delete_profile_help" = "Delete Profile";
+"none_label" = "None";
+
+/* Snippets Search Overlay */
+"search_snippets_placeholder" = "Search snippets...";
+"no_snippets_found" = "No snippets found";
+"navigate_label" = "Navigate";
+"paste_label" = "Paste";
+
+/* History */
+"history_desc" = "Review, copy, or delete past text transformations";
+"clear_all_confirm" = "Are you sure you want to clear all transformation history?";
+"clear_all_warn" = "This will permanently delete all records of past text transformations. This action cannot be undone.";
+"no_history_yet" = "No transformations yet";
+"no_matches_found" = "No matches found";
+"no_history_desc" = "Transform text using your dynamic hotkeys to see history here.";
+"search_history_placeholder" = "Search by prompt, input, or output...";
+"copied" = "Copied";
+"original_text" = "Original Text";
+"transformed_output" = "Transformed Output";
+
+/* Fix Mode Overlay */
+"fix_mode_title" = "Fix Selection Mode";
+"fix_mode_captured" = "Captured %d chars";
+"fix_mode_preview" = "SELECTION PREVIEW:";
+"fix_mode_instruction" = "INSTRUCTION:";
+"fix_mode_placeholder" = "e.g. translate to English, make it concise, refactor functional...";
+"captured_chars" = "Captured %d chars";

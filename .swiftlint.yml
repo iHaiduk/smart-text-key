@@ -1,0 +1,20 @@
+excluded:
+  - .build
+  - .swiftpm
+
+opt_in_rules:
+  - empty_count
+  - discouraged_object_literal
+
+# Adjusting rule thresholds to accommodate typical desktop application structure
+line_length:
+  warning: 240
+  error: 300
+
+type_body_length:
+  warning: 400
+  error: 600
+
+file_length:
+  warning: 800
+  error: 1200

@@ -13,31 +13,23 @@ struct ApiSettingsView: View {
 
     @State private var testStatuses: [UUID: TestStatus] = [:]
 
-    private func colorForName(_ name: String) -> Color {
-        switch name {
-        case "blue": return .blue
-        case "emerald": return .green
-        case "amber": return .orange
-        case "graphite": return .gray
-        default: return .purple
-        }
-    }
-
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                generalSettingsSection
-
-                Divider()
-
                 HStack {
-                    Text("API Configuration Profiles")
-                        .font(.title2.bold())
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(settings.localized("api_config_title"))
+                            .font(.title2.bold())
+                        Text(settings.localized("api_config_desc"))
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
+                    }
+                    
                     Spacer()
 
                     Button {
                         let newConfig = APIConfig(
-                            name: "New Profile",
+                            name: settings.localized("new_profile_title"),
                             apiBaseURL: APIProvider.ollama.defaultBaseURL,
                             apiKey: "",
                             modelName: APIProvider.ollama.defaultModelName,
@@ -45,7 +37,7 @@ struct ApiSettingsView: View {
                         )
                         settings.apiConfigs.append(newConfig)
                     } label: {
-                        Label("Add Profile", systemImage: "plus.circle")
+                        Label(settings.localized("add_profile_button"), systemImage: "plus.circle")
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(settings.themeAccentColor)
@@ -66,98 +58,6 @@ struct ApiSettingsView: View {
         }
     }
 
-    private var generalSettingsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("General Settings")
-                .font(.headline)
-                .foregroundStyle(.primary)
-
-            VStack(alignment: .leading, spacing: 12) {
-                Toggle(isOn: $settings.showPreviewPopover) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Show Preview Popover")
-                            .font(.system(size: 13, weight: .semibold))
-                        Text("Review, edit, or copy the AI response before pasting it into the active app.")
-                            .font(.system(size: 11))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .toggleStyle(.checkbox)
-                .tint(settings.themeAccentColor)
-
-                Divider()
-
-                HStack(spacing: 40) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Accent Color")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(.secondary)
-
-                        HStack(spacing: 12) {
-                            ForEach(["blue", "emerald", "amber", "graphite", "purple"], id: \.self) { colorName in
-                                AccentColorCircle(
-                                    colorName: colorName,
-                                    settings: settings,
-                                    color: colorForName(colorName)
-                                )
-                            }
-                        }
-                        .padding(.vertical, 4)
-                    }
-
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("HUD OSD Theme")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(.secondary)
-
-                        Picker("", selection: $settings.hudTheme) {
-                            Text("System").tag("system")
-                            Text("Light").tag("light")
-                            Text("Dark").tag("dark")
-                        }
-                        .pickerStyle(.segmented)
-                        .frame(width: 200)
-                        .labelsHidden()
-                    }
-                }
-
-                Divider()
-
-                HStack(spacing: 30) {
-                    Toggle("Enable Premium Sounds", isOn: $settings.enableSoundEffects)
-                        .toggleStyle(.checkbox)
-                        .tint(settings.themeAccentColor)
-
-                    Toggle("Launch at Login", isOn: $settings.launchAtLogin)
-                        .toggleStyle(.checkbox)
-                        .tint(settings.themeAccentColor)
-                }
-
-                if let loginError = settings.launchAtLoginError {
-                    Label(loginError, systemImage: "exclamationmark.triangle.fill")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(.red)
-                        .padding(.top, 2)
-                }
-
-                if let dbError = settings.databaseDiagnosticError {
-                    Label(dbError, systemImage: "exclamationmark.triangle.fill")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(.red)
-                        .padding(.top, 2)
-                }
-            }
-        }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(NSColor.controlBackgroundColor).opacity(0.3))
-        .cornerRadius(10)
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(settings.themeAccentColor.opacity(0.2), lineWidth: 1)
-        )
-    }
-
     private func apiProfileCard(config: APIConfig, index: Int) -> some View {
         let isActive = settings.activeConfigId == config.id
 
@@ -172,9 +72,14 @@ struct ApiSettingsView: View {
                 }
                 .buttonStyle(.plain)
 
-                TextField("Profile Name", text: $settings.apiConfigs[index].name)
-                    .textFieldStyle(.plain)
-                    .font(.system(size: 14, weight: .semibold))
+                VStack(alignment: .leading, spacing: 2) {
+                    TextField(settings.localized("profile_name_placeholder"), text: $settings.apiConfigs[index].name)
+                        .textFieldStyle(.plain)
+                        .font(.system(size: 14, weight: .semibold))
+                    Text(settings.localized("profile_name_desc"))
+                        .font(.system(size: 9))
+                        .foregroundStyle(.secondary)
+                }
 
                 Spacer()
 
@@ -185,7 +90,7 @@ struct ApiSettingsView: View {
                         .foregroundStyle(settings.themeAccentColor)
                 }
                 .buttonStyle(.plain)
-                .help("Clone Profile")
+                .help(settings.localized("clone_profile_help"))
                 .padding(.trailing, 6)
 
                 if settings.apiConfigs.count > 1 {
@@ -196,7 +101,7 @@ struct ApiSettingsView: View {
                             .foregroundStyle(.red)
                     }
                     .buttonStyle(.plain)
-                    .help("Delete Profile")
+                    .help(settings.localized("delete_profile_help"))
                 }
             }
 
@@ -204,7 +109,7 @@ struct ApiSettingsView: View {
                 Divider()
                     .padding(.vertical, 4)
 
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 14) {
                     providerPicker(index: index)
                     baseURLField(index: index)
                     apiKeyField(index: index)
@@ -227,7 +132,7 @@ struct ApiSettingsView: View {
 
     private func providerPicker(index: Int) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("API Provider")
+            Text(settings.localized("api_provider_label"))
                 .font(.system(size: 10, weight: .bold))
                 .foregroundStyle(.secondary)
 
@@ -252,32 +157,42 @@ struct ApiSettingsView: View {
                     settings.apiConfigs[index].modelName = newProvider.defaultModelName
                 }
             }
+            
+            Text(settings.localized("api_provider_desc"))
+                .font(.system(size: 9))
+                .foregroundStyle(.secondary)
         }
     }
 
     private func baseURLField(index: Int) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("API Base URL")
+            Text(settings.localized("api_base_url_label"))
                 .font(.system(size: 10, weight: .bold))
                 .foregroundStyle(.secondary)
             TextField("e.g. http://localhost:11434/v1", text: $settings.apiConfigs[index].apiBaseURL)
                 .textFieldStyle(.roundedBorder)
                 .font(.system(size: 12, design: .monospaced))
+            Text(settings.localized("api_base_url_desc"))
+                .font(.system(size: 9))
+                .foregroundStyle(.secondary)
         }
     }
 
     private func apiKeyField(index: Int) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("API Key (optional for local API)")
+            Text(settings.localized("api_key_label"))
                 .font(.system(size: 10, weight: .bold))
                 .foregroundStyle(.secondary)
             SecureApiKeyField(apiKey: $settings.apiConfigs[index].apiKey)
+            Text(settings.localized("api_key_desc"))
+                .font(.system(size: 9))
+                .foregroundStyle(.secondary)
         }
     }
 
     private func modelField(index: Int) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Model Name")
+            Text(settings.localized("model_name_label"))
                 .font(.system(size: 10, weight: .bold))
                 .foregroundStyle(.secondary)
             ModelSearchPicker(
@@ -288,23 +203,30 @@ struct ApiSettingsView: View {
                 themeAccentColor: settings.themeAccentColor
             )
             .id("\(settings.apiConfigs[index].id)-\(settings.apiConfigs[index].providerId)")
+            Text(settings.localized("model_name_desc"))
+                .font(.system(size: 9))
+                .foregroundStyle(.secondary)
         }
     }
 
     private func fallbackPicker(config: APIConfig, index: Int) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Fallback API Profile (Automated connection failover)")
+            Text(settings.localized("fallback_profile_label"))
                 .font(.system(size: 10, weight: .bold))
                 .foregroundStyle(.secondary)
 
             Picker("", selection: $settings.apiConfigs[index].fallbackConfigId) {
-                Text("None").tag(UUID?.none)
+                Text(settings.localized("none_label")).tag(UUID?.none)
                 ForEach(settings.apiConfigs.filter { $0.id != config.id }) { other in
                     Text(other.name).tag(UUID?.some(other.id))
                 }
             }
             .pickerStyle(.menu)
             .labelsHidden()
+            
+            Text(settings.localized("fallback_profile_desc"))
+                .font(.system(size: 9))
+                .foregroundStyle(.secondary)
         }
     }
 
@@ -338,7 +260,7 @@ struct ApiSettingsView: View {
                     } else {
                         Image(systemName: "bolt.horizontal.fill")
                     }
-                    Text("Test Connection")
+                    Text(settings.localized("test_connection_button"))
                 }
             }
             .buttonStyle(.bordered)
@@ -349,7 +271,7 @@ struct ApiSettingsView: View {
                 case .idle:
                     EmptyView()
                 case .testing:
-                    Text("Connecting...")
+                    Text(settings.localized("connecting_label"))
                         .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                 case .success(let msg):
@@ -371,7 +293,7 @@ struct ApiSettingsView: View {
         let original = settings.apiConfigs[index]
         let clone = APIConfig(
             id: UUID(),
-            name: "\(original.name) Copy",
+            name: "\(original.name) \(settings.localized("profile_copy_suffix"))",
             apiBaseURL: original.apiBaseURL,
             apiKey: original.apiKey,
             modelName: original.modelName,

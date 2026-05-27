@@ -150,6 +150,16 @@ final class MockClipboardClient: ClipboardClientProtocol {
         restoreCalled = true
         restoredBackup = backup
     }
+    
+    func backupPasteboard() -> [NSPasteboard.PasteboardType: Data] {
+        return backupData
+    }
+    
+    func resetState() {
+        sourceApplication = nil
+        hadSelectionInitially = false
+        usedSelectAll = false
+    }
 }
 
 @MainActor
@@ -229,6 +239,11 @@ final class MockHUDPresenter: HUDPresenterProtocol {
     func dismissPopover(animated: Bool) {
         dismissPopoverCalled = true
     }
+    
+    func showSnippetsSearch(snippets: [PromptAction], onSelect: @escaping @MainActor (PromptAction) -> Void) {}
+    func dismissSnippetsSearch() {}
+    func showFixModeInput(capturedText: String, onConfirm: @escaping @MainActor (String) -> Void, onCancel: @escaping @MainActor () -> Void) {}
+    func dismissFixModeInput() {}
 }
 
 @MainActor
@@ -388,6 +403,58 @@ struct TransformationPipelineTests {
         #expect(history.logCalled == false)
         #expect(reporter.reportCalled == true)
         #expect(reporter.lastMessage?.contains("empty response") == true)
+    }
+    
+    @Test("Test pipeline bypasses selection capture when pre-captured text and backup are provided")
+    func testPipelineBypassesCaptureWithPreCapturedInput() async throws {
+        let clipboard = MockClipboardClient()
+        let ai = MockAIClient()
+        let hud = MockHUDPresenter()
+        let history = MockHistoryStore()
+        let reporter = MockErrorReporter()
+        
+        let pipeline = TransformationPipeline(
+            clipboardClient: clipboard,
+            aiClient: ai,
+            hudPresenter: hud,
+            historyStore: history,
+            errorReporter: reporter
+        )
+        
+        let action = PromptAction(
+            title: "Summarize",
+            systemPrompt: "Summarize this text",
+            template: "Summarize: {{TEXT}}\nOriginal Clipboard: {{CLIPBOARD}}",
+            shortcutId: "summarize"
+        )
+        
+        AppSettings.shared.showPreviewPopover = false
+        
+        let preCapturedBackup: [NSPasteboard.PasteboardType: Data] = [.string: "Pre-captured backup data".data(using: .utf8)!]
+        
+        await pipeline.run(
+            action: action,
+            preCapturedText: "Pre-captured text content",
+            preCapturedBackup: preCapturedBackup,
+            originalClipboardText: "Original pre-captured clipboard"
+        )
+        
+        #expect(clipboard.captureCalled == false) // Bypassed!
+        #expect(ai.processCalled == true)
+        #expect(ai.lastCapturedText == "Pre-captured text content")
+        #expect(ai.lastOriginalClipboardText == "Original pre-captured clipboard")
+        
+        #expect(hud.showHUDCalled == true)
+        #expect(hud.dismissHUDCalled == true)
+        
+        #expect(clipboard.pasteCalled == true)
+        #expect(clipboard.pastedText == "AI processed text")
+        
+        #expect(history.logCalled == true)
+        #expect(history.lastPromptTitle == "Summarize")
+        #expect(history.lastInputText == "Pre-captured text content")
+        #expect(history.lastOutputText == "AI processed text")
+        #expect(reporter.reportCalled == false)
     }
 }
 
