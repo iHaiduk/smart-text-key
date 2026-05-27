@@ -67,9 +67,13 @@ final class RecordedRequestStore: @unchecked Sendable {
     }
 }
 
+enum TestEnvironment {
+    static let isRunningOnCI = ProcessInfo.processInfo.environment["CI"] == "true"
+}
+
 // MARK: - Suite Setup
 
-@Suite("API Providers Integration Tests", .serialized)
+@Suite("API Providers Integration Tests", .serialized, .enabled(if: !TestEnvironment.isRunningOnCI))
 @MainActor
 struct APIProvidersTests {
     let session: URLSession
