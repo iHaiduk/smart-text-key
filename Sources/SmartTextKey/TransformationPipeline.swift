@@ -60,6 +60,12 @@ public enum PipelineState: Equatable, CustomStringConvertible {
 
 @MainActor
 public final class TransformationPipeline {
+    private struct CaptureResult {
+        let text: String
+        let backup: [NSPasteboard.PasteboardType: Data]
+        let originalClipboardText: String
+    }
+
     private let clipboardClient: ClipboardClientProtocol
     private let aiClient: AIClientProtocol
     private let hudPresenter: HUDPresenterProtocol
@@ -107,215 +113,271 @@ public final class TransformationPipeline {
             AppLogger.pipeline.warning("Pipeline is already running!")
             return
         }
-        
+
         if preCapturedText == nil {
             clipboardClient.resetState()
         }
-        
+
         state = .waitingForModifiersRelease
-        
-        // 1. Wait for modifier keys to be released to prevent collision with simulated keys
-        let startTime = Date()
-        while Date().timeIntervalSince(startTime) < 1.0 {
-            let flags = NSEvent.modifierFlags
-            let mask: NSEvent.ModifierFlags = [.command, .option, .control, .shift]
-            if flags.intersection(mask).isEmpty {
-                break
-            }
-            do {
-                try await Task.sleep(for: .milliseconds(20))
-            } catch {
-                state = .cancelled(context: PipelineContext())
-                return
-            }
-        }
-        
-        do {
-            try await Task.sleep(for: .milliseconds(50))
-        } catch {
-            state = .cancelled(context: PipelineContext())
+
+        guard await waitForModifiersRelease() else {
+            cancelRun()
             return
         }
-        
-        if Task.isCancelled {
-            state = .cancelled(context: PipelineContext())
+
+        if await handleSnippetAction(action, sourceApplication: sourceApplication) {
             return
         }
-        
-        if action.isSnippet {
-            let dateStr = DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .short)
-            let originalClipboard = NSPasteboard.general.string(forType: .string) ?? ""
-            let appName = (sourceApplication ?? NSWorkspace.shared.frontmostApplication)?.localizedName ?? "Active App"
-            
-            var textToPaste = action.template
-            textToPaste = textToPaste.replacingOccurrences(of: "{{CLIPBOARD}}", with: originalClipboard)
-            textToPaste = textToPaste.replacingOccurrences(of: "{{DATE}}", with: dateStr)
-            textToPaste = textToPaste.replacingOccurrences(of: "{{CURRENT_APP}}", with: appName)
-            
-            soundPlayer.play(.success)
-            let backup = clipboardClient.backupPasteboard()
-            let frontApp = sourceApplication ?? NSWorkspace.shared.frontmostApplication
-            
-            await clipboardClient.pasteResultText(textToPaste, originalBackup: backup, sourceApplication: frontApp)
-            
-            state = .completed(outputText: textToPaste, context: PipelineContext(sourceApplication: frontApp))
+
+        soundPlayer.play(.start)
+        state = .capturingText
+
+        guard let result = await captureResult(
+            preCapturedText: preCapturedText,
+            preCapturedBackup: preCapturedBackup,
+            originalClipboardText: originalClipboardText
+        ) else {
             state = .idle
             return
         }
-        
-        // Play start sound cue
-        soundPlayer.play(.start)
-        
-        state = .capturingText
-        
-        struct CaptureResult {
-            let text: String
-            let backup: [NSPasteboard.PasteboardType: Data]
-            let originalClipboardText: String
-        }
-        
-        let result: CaptureResult
-        if let preCapturedText = preCapturedText, let preCapturedBackup = preCapturedBackup {
-            result = CaptureResult(
-                text: preCapturedText,
-                backup: preCapturedBackup,
-                originalClipboardText: originalClipboardText ?? ""
-            )
-        } else {
-            guard let capture = await clipboardClient.captureSelectedText() else {
-                state = .idle
-                return
-            }
-            result = CaptureResult(
-                text: capture.text,
-                backup: capture.backup,
-                originalClipboardText: capture.originalClipboardText
-            )
-        }
-        
-        let context = PipelineContext(
+
+        let context = makeContext(
             sourceApplication: sourceApplication ?? clipboardClient.sourceApplication,
-            activeScreen: NSScreen.screenWithMouse,
-            mouseLocation: NSEvent.mouseLocation,
             originalClipboardText: result.originalClipboardText
         )
-        
+
         if Task.isCancelled {
             clipboardClient.restorePasteboard(result.backup)
             state = .cancelled(context: context)
             state = .idle
             return
         }
-        
-        // 3. Prepare AI pipeline
         statusIndicator.setLoading(true)
         StreamingState.shared.reset()
-        
-        let apiSettings = settings
-        let modelName: String
+        let modelName = resolveModelName(for: action)
+        prepareStreamingState(for: action)
+        state = .preparingGeneration(capturedText: result.text, context: context)
+
+        if settings.showPreviewPopover {
+            await executePreviewProcessing(action: action, result: result, context: context, modelName: modelName)
+            state = .idle
+            return
+        }
+
+        await executeDirectProcessing(action: action, result: result, context: context, modelName: modelName)
+        statusIndicator.setLoading(false)
+        hudPresenter.dismissHUD(animated: true)
+        state = .idle
+    }
+
+    private func waitForModifiersRelease() async -> Bool {
+        let startTime = Date()
+        while Date().timeIntervalSince(startTime) < 1.0 {
+            let activeModifierFlags = NSEvent.modifierFlags
+            let modifierMask: NSEvent.ModifierFlags = [.command, .option, .control, .shift]
+            if activeModifierFlags.intersection(modifierMask).isEmpty {
+                break
+            }
+
+            do {
+                try await Task.sleep(for: .milliseconds(20))
+            } catch {
+                return false
+            }
+        }
+
+        do {
+            try await Task.sleep(for: .milliseconds(50))
+        } catch {
+            return false
+        }
+
+        return !Task.isCancelled
+    }
+
+    private func cancelRun() {
+        state = .cancelled(context: PipelineContext())
+    }
+
+    private func handleSnippetAction(
+        _ action: PromptAction,
+        sourceApplication: NSRunningApplication?
+    ) async -> Bool {
+        guard action.isSnippet else {
+            return false
+        }
+
+        let dateString = DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .short)
+        let clipboardText = NSPasteboard.general.string(forType: .string) ?? ""
+        let frontmostApplication = sourceApplication ?? NSWorkspace.shared.frontmostApplication
+        let applicationName = frontmostApplication?.localizedName ?? "Active App"
+
+        var textToPaste = action.template
+        textToPaste = textToPaste.replacingOccurrences(of: "{{CLIPBOARD}}", with: clipboardText)
+        textToPaste = textToPaste.replacingOccurrences(of: "{{DATE}}", with: dateString)
+        textToPaste = textToPaste.replacingOccurrences(of: "{{CURRENT_APP}}", with: applicationName)
+
+        soundPlayer.play(.success)
+        let backup = clipboardClient.backupPasteboard()
+        await clipboardClient.pasteResultText(
+            textToPaste,
+            originalBackup: backup,
+            sourceApplication: frontmostApplication
+        )
+
+        state = .completed(
+            outputText: textToPaste,
+            context: PipelineContext(sourceApplication: frontmostApplication)
+        )
+        state = .idle
+        return true
+    }
+
+    private func captureResult(
+        preCapturedText: String?,
+        preCapturedBackup: [NSPasteboard.PasteboardType: Data]?,
+        originalClipboardText: String?
+    ) async -> CaptureResult? {
+        if let preCapturedText, let preCapturedBackup {
+            return CaptureResult(
+                text: preCapturedText,
+                backup: preCapturedBackup,
+                originalClipboardText: originalClipboardText ?? ""
+            )
+        }
+
+        guard let capture = await clipboardClient.captureSelectedText() else {
+            return nil
+        }
+
+        return CaptureResult(
+            text: capture.text,
+            backup: capture.backup,
+            originalClipboardText: capture.originalClipboardText
+        )
+    }
+
+    private func makeContext(
+        sourceApplication: NSRunningApplication?,
+        originalClipboardText: String
+    ) -> PipelineContext {
+        PipelineContext(
+            sourceApplication: sourceApplication,
+            activeScreen: NSScreen.screenWithMouse,
+            mouseLocation: NSEvent.mouseLocation,
+            originalClipboardText: originalClipboardText
+        )
+    }
+
+    private func resolveModelName(for action: PromptAction) -> String {
         if let boundId = action.apiConfigId,
-           let boundConfig = apiSettings.apiConfigs.first(where: { $0.id == boundId }) {
-            modelName = boundConfig.modelName
-        } else {
-            modelName = apiSettings.activeConfig.modelName
+           let boundConfig = settings.apiConfigs.first(where: { $0.id == boundId }) {
+            return boundConfig.modelName
         }
-        
+
+        return settings.activeConfig.modelName
+    }
+
+    private func prepareStreamingState(for action: PromptAction) {
         let shortcutName = KeyboardShortcuts.Name(action.shortcutId)
-        if let shortcut = KeyboardShortcuts.getShortcut(for: shortcutName) {
-            StreamingState.shared.shortcutName = shortcut.description
-        } else {
-            StreamingState.shared.shortcutName = ""
-        }
+        StreamingState.shared.shortcutName = KeyboardShortcuts.getShortcut(for: shortcutName)?.description ?? ""
         StreamingState.shared.isPreparing = true
         StreamingState.shared.isStreaming = true
-        
+
         Task {
             try? await Task.sleep(for: .seconds(1.2))
-            await MainActor.run { StreamingState.shared.isPreparing = false }
+            await MainActor.run {
+                StreamingState.shared.isPreparing = false
+            }
         }
-        
-        state = .preparingGeneration(capturedText: result.text, context: context)
-        
-        var shouldCleanHUDAtEnd = true
-        
-        if settings.showPreviewPopover {
-            shouldCleanHUDAtEnd = false
-            
-            hudPresenter.showPopover(
-                resultText: "",
-                promptTitle: action.title,
-                screen: context.activeScreen,
-                onPaste: { [weak self] in
-                    guard let self = self else { return }
-                    Task {
-                        let text = StreamingState.shared.text
-                        await self.clipboardClient.pasteResultText(text, originalBackup: result.backup, sourceApplication: context.sourceApplication)
-                        self.state = .idle
-                    }
-                },
-                onCopy: { [weak self] in
-                    guard let self = self else { return }
+    }
+
+    private func executePreviewProcessing(
+        action: PromptAction,
+        result: CaptureResult,
+        context: PipelineContext,
+        modelName: String
+    ) async {
+        hudPresenter.showPopover(
+            resultText: "",
+            promptTitle: action.title,
+            screen: context.activeScreen,
+            onPaste: { [weak self] in
+                guard let self else { return }
+                Task {
                     let text = StreamingState.shared.text
-                    let pasteboard = NSPasteboard.general
-                    pasteboard.declareTypes([.string], owner: nil)
-                    pasteboard.setString(text, forType: .string)
-                    self.state = .idle
-                },
-                onRegenerate: { [weak self] in
-                    guard let self = self else { return }
-                    self.state = .idle
-                    // Trigger regeneration by starting the pipeline again
-                    Task {
-                        await self.run(action: action)
-                    }
-                },
-                onCancel: { [weak self] in
-                    guard let self = self else { return }
-                    self.clipboardClient.restorePasteboard(result.backup)
-                    self.state = .cancelled(context: context)
+                    await self.clipboardClient.pasteResultText(
+                        text,
+                        originalBackup: result.backup,
+                        sourceApplication: context.sourceApplication
+                    )
                     self.state = .idle
                 }
-            )
-            
-            await executeProcessing(
-                action: action,
-                capturedText: result.text,
-                backup: result.backup,
-                context: context,
-                modelName: modelName,
-                dismissUI: { [weak self] animated in
-                    self?.hudPresenter.dismissPopover(animated: animated)
-                },
-                onSuccess: { response in
-                    StreamingState.shared.text = response
+            },
+            onCopy: { [weak self] in
+                guard let self else { return }
+                let text = StreamingState.shared.text
+                let pasteboard = NSPasteboard.general
+                pasteboard.declareTypes([.string], owner: nil)
+                pasteboard.setString(text, forType: .string)
+                self.state = .idle
+            },
+            onRegenerate: { [weak self] in
+                guard let self else { return }
+                self.state = .idle
+                Task {
+                    await self.run(action: action)
                 }
-            )
-        } else {
-            // Non-popover mode: direct HUD paste
-            hudPresenter.showHUD(actionTitle: action.title, modelName: modelName, screen: context.activeScreen)
-            
-            await executeProcessing(
-                action: action,
-                capturedText: result.text,
-                backup: result.backup,
-                context: context,
-                modelName: modelName,
-                dismissUI: { [weak self] animated in
-                    self?.hudPresenter.dismissHUD(animated: animated)
-                },
-                onSuccess: { [weak self] response in
-                    guard let self = self else { return }
-                    await self.clipboardClient.pasteResultText(response, originalBackup: result.backup, sourceApplication: context.sourceApplication)
-                }
-            )
-        }
-        
-        if shouldCleanHUDAtEnd {
-            statusIndicator.setLoading(false)
-            hudPresenter.dismissHUD(animated: true)
-        }
-        
-        state = .idle
+            },
+            onCancel: { [weak self] in
+                guard let self else { return }
+                self.clipboardClient.restorePasteboard(result.backup)
+                self.state = .cancelled(context: context)
+                self.state = .idle
+            }
+        )
+
+        await executeProcessing(
+            action: action,
+            capturedText: result.text,
+            backup: result.backup,
+            context: context,
+            modelName: modelName,
+            dismissUI: { [weak self] animated in
+                self?.hudPresenter.dismissPopover(animated: animated)
+            },
+            onSuccess: { response in
+                StreamingState.shared.text = response
+            }
+        )
+    }
+
+    private func executeDirectProcessing(
+        action: PromptAction,
+        result: CaptureResult,
+        context: PipelineContext,
+        modelName: String
+    ) async {
+        hudPresenter.showHUD(actionTitle: action.title, modelName: modelName, screen: context.activeScreen)
+
+        await executeProcessing(
+            action: action,
+            capturedText: result.text,
+            backup: result.backup,
+            context: context,
+            modelName: modelName,
+            dismissUI: { [weak self] animated in
+                self?.hudPresenter.dismissHUD(animated: animated)
+            },
+            onSuccess: { [weak self] response in
+                guard let self else { return }
+                await self.clipboardClient.pasteResultText(
+                    response,
+                    originalBackup: result.backup,
+                    sourceApplication: context.sourceApplication
+                )
+            }
+        )
     }
 
     private func executeProcessing(

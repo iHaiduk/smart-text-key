@@ -26,7 +26,7 @@ struct OpenAICompatibleProviderClient: AIProviderClient {
                 .init(role: "system", content: action.systemPrompt),
                 .init(role: "user", content: finalPrompt)
             ],
-            n: 1,
+            choiceCount: 1,
             stream: onChunk != nil ? true : nil
         ))
 

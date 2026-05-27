@@ -8,8 +8,15 @@ struct ChatCompletionRequest: Codable {
 
     let model: String
     let messages: [Message]
-    let n: Int?
+    let choiceCount: Int?
     let stream: Bool?
+
+    enum CodingKeys: String, CodingKey {
+        case model
+        case messages
+        case choiceCount = "n"
+        case stream
+    }
 }
 
 struct ChatCompletionResponse: Codable {

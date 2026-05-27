@@ -96,13 +96,13 @@ public final class HUDManager: HUDPresenterProtocol {
         guard let activeScreen = targetScreen else { return NSPanel() }
         let screenFrame = activeScreen.visibleFrame
         
-        let x = screenFrame.origin.x + (screenFrame.width - width) / 2
-        let y = screenFrame.origin.y + (screenFrame.height - height) / 2 + 100
+        let panelOriginX = screenFrame.origin.x + (screenFrame.width - width) / 2
+        let panelOriginY = screenFrame.origin.y + (screenFrame.height - height) / 2 + 100
         
         let hostingController = NSHostingController(rootView: contentView)
         
         let panel = InteractiveHUDPanel(
-            contentRect: NSRect(x: x, y: y, width: width, height: height),
+            contentRect: NSRect(x: panelOriginX, y: panelOriginY, width: width, height: height),
             styleMask: [.borderless],
             backing: .buffered,
             defer: false
@@ -146,10 +146,10 @@ public final class HUDManager: HUDPresenterProtocol {
         guard let activeScreen = targetScreen else { return }
         let screenFrame = activeScreen.visibleFrame
         
-        let x = screenFrame.origin.x + (screenFrame.width - hudWidth) / 2
-        let y = screenFrame.origin.y + 36 // 36 pt offset from screen bottom visible frame boundary
+        let panelOriginX = screenFrame.origin.x + (screenFrame.width - hudWidth) / 2
+        let panelOriginY = screenFrame.origin.y + 36 // 36 pt offset from screen bottom visible frame boundary
         
-        let panelFrame = NSRect(x: x, y: y, width: hudWidth, height: hudHeight)
+        let panelFrame = NSRect(x: panelOriginX, y: panelOriginY, width: hudWidth, height: hudHeight)
         
         // 2. Instantiate non-activating borderless NSPanel
         let panel = NSPanel(
