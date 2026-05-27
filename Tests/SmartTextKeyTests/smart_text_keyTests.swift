@@ -276,6 +276,19 @@ final class MockErrorReporter: ErrorReporterProtocol {
     }
 }
 
+final class MockSoundPlayer: SoundPlayerProtocol {
+    func play(_ type: SoundManager.SoundType) {}
+}
+
+@MainActor
+final class MockStatusIndicator: StatusIndicatorProtocol {
+    private(set) var loadingStates: [Bool] = []
+
+    func setLoading(_ isLoading: Bool) {
+        loadingStates.append(isLoading)
+    }
+}
+
 @Suite("Text Transformation Pipeline Tests")
 @MainActor
 struct TransformationPipelineTests {
@@ -287,13 +300,17 @@ struct TransformationPipelineTests {
         let hud = MockHUDPresenter()
         let history = MockHistoryStore()
         let reporter = MockErrorReporter()
+        let soundPlayer = MockSoundPlayer()
+        let statusIndicator = MockStatusIndicator()
         
         let pipeline = TransformationPipeline(
             clipboardClient: clipboard,
             aiClient: ai,
             hudPresenter: hud,
             historyStore: history,
-            errorReporter: reporter
+            errorReporter: reporter,
+            soundPlayer: soundPlayer,
+            statusIndicator: statusIndicator
         )
         
         let action = PromptAction(
@@ -333,6 +350,8 @@ struct TransformationPipelineTests {
         let hud = MockHUDPresenter()
         let history = MockHistoryStore()
         let reporter = MockErrorReporter()
+        let soundPlayer = MockSoundPlayer()
+        let statusIndicator = MockStatusIndicator()
         
         ai.shouldFail = true
         
@@ -341,7 +360,9 @@ struct TransformationPipelineTests {
             aiClient: ai,
             hudPresenter: hud,
             historyStore: history,
-            errorReporter: reporter
+            errorReporter: reporter,
+            soundPlayer: soundPlayer,
+            statusIndicator: statusIndicator
         )
         
         let action = PromptAction(
@@ -372,6 +393,8 @@ struct TransformationPipelineTests {
         let hud = MockHUDPresenter()
         let history = MockHistoryStore()
         let reporter = MockErrorReporter()
+        let soundPlayer = MockSoundPlayer()
+        let statusIndicator = MockStatusIndicator()
         
         ai.responseText = "" // Empty response
         
@@ -380,7 +403,9 @@ struct TransformationPipelineTests {
             aiClient: ai,
             hudPresenter: hud,
             historyStore: history,
-            errorReporter: reporter
+            errorReporter: reporter,
+            soundPlayer: soundPlayer,
+            statusIndicator: statusIndicator
         )
         
         let action = PromptAction(
@@ -412,13 +437,17 @@ struct TransformationPipelineTests {
         let hud = MockHUDPresenter()
         let history = MockHistoryStore()
         let reporter = MockErrorReporter()
+        let soundPlayer = MockSoundPlayer()
+        let statusIndicator = MockStatusIndicator()
         
         let pipeline = TransformationPipeline(
             clipboardClient: clipboard,
             aiClient: ai,
             hudPresenter: hud,
             historyStore: history,
-            errorReporter: reporter
+            errorReporter: reporter,
+            soundPlayer: soundPlayer,
+            statusIndicator: statusIndicator
         )
         
         let action = PromptAction(
@@ -457,4 +486,3 @@ struct TransformationPipelineTests {
         #expect(reporter.reportCalled == false)
     }
 }
-
